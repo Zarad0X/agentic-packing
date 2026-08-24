@@ -1,0 +1,15 @@
+.DS_Store
+._*
+.env
+.env.*
+!.env.example
+*.egg-info/
+.conda/
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+output/
+assets/cache/
+context_summary.md

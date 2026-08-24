@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PhyScensis · Physics-Augmented Scene Arrangement</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#"><span class="brand-mark">P</span><span>PhyScensis</span></a>
+    <nav><a href="#demo">Demo</a><a href="#method">Method</a><a href="#program">Program</a></nav>
+    <span class="status"><i></i> solver online</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">ICLR 2026 · CLEAN-ROOM REPRODUCTION</div>
+      <h1>Language plans.<br><span>Physics decides.</span></h1>
+      <p class="lede">Generate dense, semantically precise arrangements through a constrained predicate language, occupancy search, and real rigid-body validation.</p>
+      <div class="method-strip" id="method">
+        <div><b>01</b><span>Prompt</span></div><i>→</i>
+        <div><b>02</b><span>Predicates</span></div><i>→</i>
+        <div><b>03</b><span>Spatial solve</span></div><i>→</i>
+        <div><b>04</b><span>Physics</span></div><i>→</i>
+        <div><b>05</b><span>Feedback</span></div>
+      </div>
+    </section>
+
+    <section class="demo-grid" id="demo">
+      <div class="control-panel">
+        <div class="panel-heading"><span>Scene request</span><span class="backend" id="backend">checking…</span></div>
+        <textarea id="prompt" rows="5">Densely pack a grocery basket with cartons, cans, jars and bottles in stable layers.</textarea>
+        <div class="presets">
+          <button data-prompt="Densely pack a grocery basket with cartons, cans, jars and bottles in stable layers.">Dense basket</button>
+          <button data-prompt="Fill a kitchen sink with stacked plates, bowls, cups and scattered cutlery.">Dish sink</button>
+          <button data-prompt="Build a dense dishwashing station with same-model nested dishes, mugs and cutlery.">Dish station</button>
+          <button data-prompt="Densely pack a tool crate with motors, drills, saws, hammers and wrenches.">Tool crate</button>
+          <button data-prompt="Pack an office tote with organized book stacks, laptops, keyboards and stationery.">Office tote</button>
+          <button data-prompt="Arrange an elegant dinner table for four people with symmetric place settings.">Dinner</button>
+          <button data-prompt="Create a focused office desk with a computer, notebooks and stationery.">Office</button>
+          <button data-prompt="Organize a busy workbench with tools laid out for repair work.">Workshop</button>
+          <button data-prompt="Build a physical showcase with cans in a basket and stable book stacks.">Physics</button>
+        </div>
+        <button class="generate" id="generate"><span>Generate arrangement</span><kbd>⌘ ↵</kbd></button>
+        <p class="hint">Interactive mode uses deterministic templates by default. Add <code>--agent openai</code> for free-form plans.</p>
+
+        <div class="metrics">
+          <div><small>Objects</small><strong id="objects">16</strong></div>
+          <div><small>Spatial penalty</small><strong id="penalty">0.000</strong></div>
+          <div><small>Settle distance</small><strong id="settle">0.032 mm</strong></div>
+          <div><small>Container fill</small><strong id="packing">—</strong></div>
+        </div>
+      </div>
+
+      <div class="viewport-card">
+        <div class="viewport-top"><span id="viewport-label">GENESIS VIEWPORT</span><span id="scene-state">PHYSICALLY STABLE</span></div>
+        <div class="viewport">
+          <img id="render" src="/preview" alt="Generated physical arrangement">
+          <div class="scanline"></div>
+          <div class="loading" id="loading"><span></span><p>Solving arrangement…</p><small>spatial → occupancy → physics</small></div>
+        </div>
+        <div class="viewport-bottom"><span id="summary">Scene solved successfully.</span><span class="verified">✓ verified</span></div>
+      </div>
+    </section>
+
+    <section class="program-section" id="program">
+      <div>
+        <div class="eyebrow">INTERPRETABLE INTERMEDIATE REPRESENTATION</div>
+        <h2>Every decision is inspectable.</h2>
+        <p>The agent never emits raw coordinates alone. It writes explicit semantic and physical predicates; deterministic solvers turn them into poses and report failures back to the agent.</p>
+      </div>
+      <pre><code id="program-code">["plate_0", "PLACE-ON-BASE", "root", {"x": 0.30, "y": 0.25}]
+["fork_0", "LEFT-OF", "plate_0", {"distance": 0.04}]
+["cup_0", "FACING-FRONT", "root", {}]</code></pre>
+    </section>
+  </main>
+
+  <footer><span>PhyScensis reproduction · paper-aligned core</span><span>Genesis rigid-body backend · deterministic fallback</span></footer>
+  <script src="/app.js"></script>
+</body>
+</html>

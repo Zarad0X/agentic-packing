@@ -1,0 +1,26 @@
+[
+  ["basket_0", "a green open storage basket"],
+  ["basket_0", "PLACE-ON-BASE", "root", {"x": -0.35, "y": 0.18}],
+  ["basket_0", "FACING-FRONT", "root", {}],
+  [[ ["can", 8] ], "PLACE-IN", "basket_0", {}],
+
+  ["book_0", "a large dark hardcover book"],
+  ["book_0", "PLACE-ON-BASE", "root", {"x": 0.30, "y": -0.18}],
+  ["book_0", "FACING-LEFT", "root", {}],
+  ["book_1", "a medium red hardcover book"],
+  ["book_1", "PLACE-ON", "book_0", {"overlap": 0.92, "stability": "stable"}],
+  ["book_1", "FACING-LEFT", "root", {}],
+  ["book_2", "a small blue hardcover book"],
+  ["book_2", "PLACE-ON", "book_1", {"overlap": 0.86, "stability": "stable"}],
+  ["book_2", "FACING-LEFT", "root", {}],
+
+  ["bowl_0", "a wide ceramic bowl"],
+  ["bowl_0", "PLACE-ON-BASE", "root", {"x": 0.18, "y": 0.24}],
+  ["bowl_0", "FACING-FRONT", "root", {}],
+  ["cup_0", "a small ceramic cup"],
+  ["cup_0", "PLACE-ON", "bowl_0", {"overlap": 0.7, "stability": "stable"}],
+  ["cup_0", "FACING-FRONT", "root", {}],
+
+  ["phone_0", "a slim black mobile phone"],
+  ["phone_0", "PLACE-ANYWHERE", "root", {}]
+]

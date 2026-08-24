@@ -1,0 +1,11 @@
+[
+  ["sink_0", "a wide brushed steel dishwashing station sink"],
+  ["sink_0", "PLACE-ON-BASE", "root", {"x": 0.0, "y": 0.0}],
+  ["sink_0", "FACING-FRONT", "root", {}],
+
+  [[["plate", 8]], "PLACE-IN", "sink_0", {"strategy": "nested", "columns": 2, "group_by_asset": true, "center_y_fraction": -0.25}],
+  [[["bowl", 5]], "PLACE-IN", "sink_0", {"strategy": "nested", "columns": 1, "group_by_asset": true, "center_x_fraction": -0.27, "center_y_fraction": 0.25}],
+  [[["stackable cup", 5]], "PLACE-IN", "sink_0", {"strategy": "nested", "columns": 1, "group_by_asset": true, "center_x_fraction": 0.27, "center_y_fraction": 0.25}],
+  [[["cup", 3]], "PLACE-IN", "sink_0", {"strategy": "spread", "allow_protrusion_m": 0.06}],
+  [[["fork", 3], ["knife", 3], ["spoon", 3]], "PLACE-IN", "sink_0", {"strategy": "spread", "allow_protrusion_m": 0.08}]
+]

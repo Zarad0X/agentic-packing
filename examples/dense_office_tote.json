@@ -1,0 +1,13 @@
+[
+  ["office_tote_0", "a large blue open office storage tote"],
+  ["office_tote_0", "PLACE-ON-BASE", "root", {"x": 0.0, "y": 0.0}],
+  ["office_tote_0", "FACING-FRONT", "root", {}],
+
+  [[["book", 6]], "PLACE-IN", "office_tote_0", {"strategy": "stacked", "columns": 2, "center_y_fraction": -0.25, "allow_protrusion_m": 0.08}],
+  [[["notebook", 6]], "PLACE-IN", "office_tote_0", {"strategy": "stacked", "columns": 2, "center_y_fraction": 0.25, "allow_protrusion_m": 0.08}],
+  [[["laptop", 2]], "PLACE-IN", "office_tote_0", {"strategy": "spread", "allow_protrusion_m": 0.10}],
+  [[["keyboard", 1]], "PLACE-IN", "office_tote_0", {"strategy": "spread", "allow_protrusion_m": 0.10}],
+  [[["phone", 3]], "PLACE-IN", "office_tote_0", {"strategy": "dense", "allow_protrusion_m": 0.10}],
+  [[["mouse", 3]], "PLACE-IN", "office_tote_0", {"strategy": "dense", "allow_protrusion_m": 0.10}],
+  [[["pen", 3], ["pencil", 3]], "PLACE-IN", "office_tote_0", {"strategy": "dense", "allow_protrusion_m": 0.12}]
+]

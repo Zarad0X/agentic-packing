@@ -1,0 +1,11 @@
+[
+  ["grocery_basket_0", "a dark green large grocery basket"],
+  ["grocery_basket_0", "PLACE-ON-BASE", "root", {"x": 0.0, "y": 0.0}],
+  ["grocery_basket_0", "FACING-FRONT", "root", {}],
+
+  [[["grocery_carton", 4]], "PLACE-IN", "grocery_basket_0", {"strategy": "spread", "allow_protrusion_m": 0.06}],
+  [[["pantry_box", 4]], "PLACE-IN", "grocery_basket_0", {"strategy": "spread", "allow_protrusion_m": 0.06}],
+  [[["can", 8]], "PLACE-IN", "grocery_basket_0", {"strategy": "stacked", "columns": 4, "allow_protrusion_m": 0.06}],
+  [[["jar", 4]], "PLACE-IN", "grocery_basket_0", {"strategy": "dense", "allow_protrusion_m": 0.06}],
+  [[["bottle", 2]], "PLACE-IN", "grocery_basket_0", {"strategy": "dense", "allow_protrusion_m": 0.08}]
+]

@@ -1,0 +1,22 @@
+[
+  ["cup_0", "a red ceramic mug"],
+  ["cup_0", "PLACE-ON-BASE", "root", {"x": -0.34, "y": 0.23}],
+  ["cup_0", "FACING-FRONT", "root", {}],
+  ["cup_1", "a white patterned coffee cup"],
+  ["cup_1", "PLACE-ON-BASE", "root", {"x": -0.34, "y": -0.23}],
+  ["cup_1", "FACING-FRONT", "root", {}],
+
+  ["bowl_0", "a patterned ceramic bowl"],
+  ["bowl_0", "PLACE-ON-BASE", "root", {"x": 0.0, "y": 0.23}],
+  ["bowl_0", "FACING-FRONT", "root", {}],
+  ["bowl_1", "a blue and white tea bowl"],
+  ["bowl_1", "PLACE-ON-BASE", "root", {"x": 0.0, "y": -0.23}],
+  ["bowl_1", "FACING-FRONT", "root", {}],
+
+  ["plate_0", "a polychrome ceramic plate"],
+  ["plate_0", "PLACE-ON-BASE", "root", {"x": 0.34, "y": 0.23}],
+  ["plate_0", "FACING-FRONT", "root", {}],
+  ["plate_1", "a blue rimmed dinner plate"],
+  ["plate_1", "PLACE-ON-BASE", "root", {"x": 0.34, "y": -0.23}],
+  ["plate_1", "FACING-FRONT", "root", {}]
+]

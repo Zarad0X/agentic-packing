@@ -1,0 +1,87 @@
+schema_version: 1
+
+paper:
+  title: "PhyScensis: Physics-Augmented LLM Agents for Complex Physical Scene Arrangement"
+  venue: "ICLR 2026"
+  arxiv_id: "2602.14968"
+
+paper_reported:
+  agent_model: "o4-mini"
+  visual_evaluator_model: "GPT-4o"
+  asset_source: "BlenderKit"
+  approximate_asset_count: 800
+  assets_per_category: 30
+  spatial_solver:
+    iterations: 10
+    candidates_per_parameter: 40
+    distance_sampling_radius_fraction_of_short_scene_side: 0.1
+    rotation_sampling_radius_degrees: 10.0
+  physical_solver:
+    engine: "Genesis"
+    occupancy_grid_resolution_m:
+      ground_scene: 0.03
+      other_scene: 0.01
+    organized_bottom_voxels: 1
+    organized_search_voxels: 1
+    messy_bottom_voxels: 5
+    messy_search_voxels: 5
+  evaluation:
+    settle_steps: 400
+    settle_distance_clamp_m: 1.0
+    reported_mean_settle_distance_m: 0.003
+    reported_vqa_score: 0.704
+    reported_gpt_rank: 1.429
+
+paper_unspecified:
+  - spatial_penalty_acceptance_threshold
+  - physical_displacement_acceptance_threshold_m
+  - spatial_parameter_sampling_distribution
+  - physics_timestep_s
+  - physics_substeps
+  - physics_material_defaults
+  - perturbation_sample_count
+  - perturbation_standard_deviations
+  - retrieval_similarity_threshold
+  - generation_round_limit
+  - per_predicate_time_limit_s
+  - exact_asset_manifest
+  - evaluation_prompt_set_and_random_seeds
+
+reproduction_choices:
+  random_seed: 20260823
+  spatial_penalty_acceptance_threshold: 1.0e-6
+  physical_displacement_acceptance_threshold_m: 0.01
+  perturbation_sample_count: 64
+  stability_perturbation_std:
+    position_m: 0.005
+    rotation_rad: 0.034906585
+    center_of_mass_m: 0.002
+    friction: 0.05
+    mass_kg: 0.05
+  generation_round_limit: 6
+  per_predicate_time_limit_s: 30.0
+  local_geometry_backend: "quasistatic"
+  default_root_size_m: [1.60, 0.90, 0.08]
+  default_root_height_m: 0.75
+  relation_weight: 1000.0
+  collision_weight: 10000.0
+  boundary_weight: 10000.0
+
+acceptance_gates:
+  core_solver:
+    scene_families: 5
+    total_runs: 100
+    minimum_success_rate: 0.90
+    minimum_objects: 15
+    fraction_runs_meeting_object_count: 0.80
+    maximum_mean_settle_distance_m: 0.01
+    required_predicates: ["PLACE-IN", "PLACE-ON", "PLACE-ANYWHERE"]
+  dense_container:
+    scene_families: 2
+    total_runs: 20
+    minimum_success_rate: 0.95
+    minimum_objects: 20
+    fraction_runs_meeting_object_count: 1.0
+    maximum_mean_settle_distance_m: 0.01
+    minimum_packing_fraction: 0.30
+    minimum_packing_layers: 2
