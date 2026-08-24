@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import urllib.request
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -42,6 +43,12 @@ def _optional_bool(value: Any, field: str) -> bool | None:
     return value
 
 
+def _optional_vec3(value: Any, field: str) -> tuple[float, float, float] | None:
+    if value is None:
+        return None
+    return _vec3(value, field)
+
+
 @dataclass(frozen=True)
 class LicensedAssetEntry:
     category: str
@@ -57,11 +64,16 @@ class LicensedAssetEntry:
     raw_bounds_min: tuple[float, float, float]
     raw_bounds_max: tuple[float, float, float]
     source_up_axis: str = "y"
+    scale_mode: str = "nonuniform_fill"
+    mesh_euler_deg: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    fit_bounds_min: tuple[float, float, float] | None = None
+    fit_bounds_max: tuple[float, float, float] | None = None
     face_count: int = 0
     vertex_count: int = 0
     quality_score: int | None = None
     is_transparent: bool | None = None
     visual_qa_status: str = "unverified"
+    dense_scene_fit_status: str = "unverified"
     stackable: bool = False
     stacking_step_ratio: float = 1.0
 
@@ -100,17 +112,21 @@ class LicensedAssetEntry:
             raw_bounds_min=_vec3(value["raw_bounds_min"], "raw_bounds_min"),
             raw_bounds_max=_vec3(value["raw_bounds_max"], "raw_bounds_max"),
             source_up_axis=str(value.get("source_up_axis", "y")).lower(),
+            scale_mode=str(value.get("scale_mode", "nonuniform_fill")),
+            mesh_euler_deg=_vec3(
+                value.get("mesh_euler_deg", [0.0, 0.0, 0.0]),
+                "mesh_euler_deg",
+            ),
+            fit_bounds_min=_optional_vec3(value.get("fit_bounds_min"), "fit_bounds_min"),
+            fit_bounds_max=_optional_vec3(value.get("fit_bounds_max"), "fit_bounds_max"),
             face_count=int(value.get("face_count", 0)),
             vertex_count=int(value.get("vertex_count", 0)),
             quality_score=(
-                None
-                if value.get("quality_score") is None
-                else int(value["quality_score"])
+                None if value.get("quality_score") is None else int(value["quality_score"])
             ),
-            is_transparent=_optional_bool(
-                value.get("is_transparent"), "is_transparent"
-            ),
+            is_transparent=_optional_bool(value.get("is_transparent"), "is_transparent"),
             visual_qa_status=str(value.get("visual_qa_status", "unverified")),
+            dense_scene_fit_status=str(value.get("dense_scene_fit_status", "unverified")),
             stackable=_optional_bool(value.get("stackable", False), "stackable") or False,
             stacking_step_ratio=float(value.get("stacking_step_ratio", 1.0)),
         )
@@ -119,11 +135,11 @@ class LicensedAssetEntry:
 
     def validate(self) -> None:
         if self.license not in ALLOWED_LICENSES:
-            raise AssetManifestError(
-                f"Asset {self.uid} uses disallowed license {self.license!r}"
-            )
+            raise AssetManifestError(f"Asset {self.uid} uses disallowed license {self.license!r}")
         if self.source_up_axis not in {"y", "z"}:
             raise AssetManifestError(f"Asset {self.uid} source_up_axis must be y or z")
+        if self.scale_mode not in {"nonuniform_fill", "uniform_fit"}:
+            raise AssetManifestError(f"Asset {self.uid} has an invalid scale_mode")
         if self.filename != f"{self.uid}.glb" or Path(self.filename).name != self.filename:
             raise AssetManifestError(f"Asset {self.uid} has an unsafe or noncanonical filename")
         if len(self.sha256) != 64 or any(char not in "0123456789abcdef" for char in self.sha256):
@@ -134,14 +150,28 @@ class LicensedAssetEntry:
             raise AssetManifestError(f"Asset {self.uid} source URL is not a Sketchfab model")
         if any(high <= low for low, high in zip(self.raw_bounds_min, self.raw_bounds_max)):
             raise AssetManifestError(f"Asset {self.uid} raw bounds must have positive extents")
+        if (self.fit_bounds_min is None) != (self.fit_bounds_max is None):
+            raise AssetManifestError(f"Asset {self.uid} must provide both fit bounds or neither")
+        if self.scale_mode == "uniform_fit" and self.fit_bounds_min is None:
+            raise AssetManifestError(f"Asset {self.uid} uniform_fit requires audited fit bounds")
+        if (
+            self.fit_bounds_min is not None
+            and self.fit_bounds_max is not None
+            and any(high <= low for low, high in zip(self.fit_bounds_min, self.fit_bounds_max))
+        ):
+            raise AssetManifestError(f"Asset {self.uid} fit bounds must have positive extents")
         if self.quality_score is not None and self.quality_score not in {0, 1, 2, 3}:
             raise AssetManifestError(f"Asset {self.uid} quality score must be 0 through 3")
         if self.visual_qa_status not in {"unverified", "thumbnail_pass", "genesis_pass"}:
             raise AssetManifestError(f"Asset {self.uid} has an invalid visual QA status")
+        if self.dense_scene_fit_status not in {
+            "unverified",
+            "audit_pass",
+            "genesis_pass",
+        }:
+            raise AssetManifestError(f"Asset {self.uid} has an invalid dense scene fit status")
         if not 0.0 < self.stacking_step_ratio <= 1.0:
-            raise AssetManifestError(
-                f"Asset {self.uid} stacking_step_ratio must be in (0, 1]"
-            )
+            raise AssetManifestError(f"Asset {self.uid} stacking_step_ratio must be in (0, 1]")
         if not self.stackable and self.stacking_step_ratio != 1.0:
             raise AssetManifestError(
                 f"Asset {self.uid} cannot use a compressed stacking step when stackable is false"
@@ -152,8 +182,29 @@ class LicensedAssetEntry:
 
     def mesh_transform(
         self, target_size_m: tuple[float, float, float]
-    ) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-        center = tuple((low + high) / 2.0 for low, high in zip(self.raw_bounds_min, self.raw_bounds_max))
+    ) -> tuple[
+        tuple[float, float, float],
+        tuple[float, float, float],
+        tuple[float, float, float],
+    ]:
+        if self.scale_mode == "uniform_fit":
+            assert self.fit_bounds_min is not None
+            assert self.fit_bounds_max is not None
+            center = tuple(
+                (low + high) / 2.0 for low, high in zip(self.fit_bounds_min, self.fit_bounds_max)
+            )
+            extent = tuple(
+                high - low for low, high in zip(self.fit_bounds_min, self.fit_bounds_max)
+            )
+            uniform_scale = min(target / raw for target, raw in zip(target_size_m, extent))
+            scale = (uniform_scale, uniform_scale, uniform_scale)
+            offset = tuple(-value * uniform_scale for value in center)
+            visual_size = tuple(raw * uniform_scale for raw in extent)
+            return scale, offset, visual_size
+
+        center = tuple(
+            (low + high) / 2.0 for low, high in zip(self.raw_bounds_min, self.raw_bounds_max)
+        )
         extent = tuple(high - low for low, high in zip(self.raw_bounds_min, self.raw_bounds_max))
         if self.source_up_axis == "y":
             source_scale = (
@@ -170,7 +221,7 @@ class LicensedAssetEntry:
             source_scale = tuple(target / raw for target, raw in zip(target_size_m, extent))
             transformed_center = tuple(value * scale for value, scale in zip(center, source_scale))
         offset = tuple(-value for value in transformed_center)
-        return source_scale, offset
+        return source_scale, offset, target_size_m
 
 
 @dataclass(frozen=True)
@@ -181,6 +232,7 @@ class LicensedAssetManifest:
     require_opaque: bool = False
     quality_source_url: str | None = None
     required_visual_qa_status: str | None = None
+    required_dense_scene_fit_status: str | None = None
 
     @classmethod
     def load(cls, path: str | Path) -> LicensedAssetManifest:
@@ -189,9 +241,7 @@ class LicensedAssetManifest:
             data = json.load(stream)
         if not isinstance(data, dict) or data.get("schema_version") != 1:
             raise AssetManifestError("Asset manifest schema_version must be 1")
-        entries = tuple(
-            LicensedAssetEntry.from_mapping(value) for value in data.get("assets", [])
-        )
+        entries = tuple(LicensedAssetEntry.from_mapping(value) for value in data.get("assets", []))
         if not entries:
             raise AssetManifestError("Asset manifest must contain at least one asset")
         uids = [entry.uid for entry in entries]
@@ -205,20 +255,21 @@ class LicensedAssetManifest:
             name=str(data.get("name", manifest_path.stem)),
             entries=entries,
             minimum_quality_score=(
-                None
-                if minimum_quality_score is None
-                else int(minimum_quality_score)
+                None if minimum_quality_score is None else int(minimum_quality_score)
             ),
             require_opaque=bool(quality_gate.get("require_opaque", False)),
             quality_source_url=(
-                None
-                if quality_gate.get("source_url") is None
-                else str(quality_gate["source_url"])
+                None if quality_gate.get("source_url") is None else str(quality_gate["source_url"])
             ),
             required_visual_qa_status=(
                 None
                 if quality_gate.get("required_visual_qa_status") is None
                 else str(quality_gate["required_visual_qa_status"])
+            ),
+            required_dense_scene_fit_status=(
+                None
+                if quality_gate.get("required_dense_scene_fit_status") is None
+                else str(quality_gate["required_dense_scene_fit_status"])
             ),
         )
         manifest.validate_quality_gate()
@@ -246,25 +297,27 @@ class LicensedAssetManifest:
                     )
         if self.required_visual_qa_status is not None:
             if self.required_visual_qa_status != "genesis_pass":
-                raise AssetManifestError(
-                    "required visual QA status must be genesis_pass"
-                )
+                raise AssetManifestError("required visual QA status must be genesis_pass")
             for entry in self.entries:
                 if entry.visual_qa_status != self.required_visual_qa_status:
                     raise AssetManifestError(
                         f"Asset {entry.uid} has not passed required Genesis visual QA"
                     )
-        if (
-            self.minimum_quality_score is not None or self.require_opaque
-        ) and not (
+        if self.required_dense_scene_fit_status is not None:
+            if self.required_dense_scene_fit_status != "genesis_pass":
+                raise AssetManifestError("required dense scene fit status must be genesis_pass")
+            for entry in self.entries:
+                if entry.dense_scene_fit_status != self.required_dense_scene_fit_status:
+                    raise AssetManifestError(
+                        f"Asset {entry.uid} has not passed required dense-scene Genesis QA"
+                    )
+        if (self.minimum_quality_score is not None or self.require_opaque) and not (
             self.quality_source_url
             and self.quality_source_url.startswith(
                 "https://huggingface.co/datasets/cindyxl/ObjaversePlusPlus"
             )
         ):
-            raise AssetManifestError(
-                "quality-gated manifests must cite the Objaverse++ source"
-            )
+            raise AssetManifestError("quality-gated manifests must cite the Objaverse++ source")
 
     def validate_files(self, cache_dir: str | Path) -> dict[str, str]:
         root = Path(cache_dir)
@@ -330,9 +383,15 @@ class ManifestAssetCatalog:
 
     def resolve(self, object_id: str, description: str) -> AssetRecord:
         base = self.fallback.resolve(object_id, description)
-        searchable = f"{object_id} {description}".lower().replace("_", " ")
+        searchable = (
+            " " + re.sub(r"[^a-z0-9]+", " ", f"{object_id} {description}".lower()).strip() + " "
+        )
         matches = sorted(
-            (category for category in self.by_category if category in searchable),
+            (
+                category
+                for category in self.by_category
+                if f" {re.sub(r'[^a-z0-9]+', ' ', category).strip()} " in searchable
+            ),
             key=len,
             reverse=True,
         )
@@ -340,7 +399,7 @@ class ManifestAssetCatalog:
             return base
         variants = self.by_category[matches[0]]
         entry = variants[self._variant_index(object_id, len(variants))]
-        mesh_scale, mesh_offset = entry.mesh_transform(base.size_m)
+        mesh_scale, mesh_offset, visual_size = entry.mesh_transform(base.size_m)
         return replace(
             base,
             asset_id=f"objaverse:{entry.uid}:{object_id}",
@@ -352,9 +411,12 @@ class ManifestAssetCatalog:
             quality_score=entry.quality_score,
             transparent_visual=entry.is_transparent,
             visual_qa_status=entry.visual_qa_status,
+            dense_scene_fit_status=entry.dense_scene_fit_status,
             mesh_path=str(entry.installed_path(self.cache_dir)),
+            visual_size_m=(visual_size if entry.scale_mode == "uniform_fit" else None),
             mesh_scale=mesh_scale,
             mesh_offset_m=mesh_offset,
+            mesh_euler_deg=entry.mesh_euler_deg,
             mesh_file_is_zup=entry.source_up_axis == "z",
             stackable=entry.stackable,
             stacking_step_ratio=entry.stacking_step_ratio,

@@ -62,6 +62,8 @@ class AssetRecord:
     quality_score: int | None = None
     transparent_visual: bool | None = None
     visual_qa_status: str | None = None
+    dense_scene_fit_status: str | None = None
+    visual_size_m: Vec3 | None = None
     mesh_path: str | None = None
     mesh_scale: Vec3 = (1.0, 1.0, 1.0)
     mesh_offset_m: Vec3 = (0.0, 0.0, 0.0)
@@ -82,13 +84,11 @@ class AssetRecord:
         if self.friction < 0:
             raise ValueError(f"Asset {self.asset_id} cannot have negative friction")
         if not 0.0 < self.stacking_step_ratio <= 1.0:
-            raise ValueError(
-                f"Asset {self.asset_id} stacking_step_ratio must be in (0, 1]"
-            )
-        if self.collision_size_m is not None and any(
-            value <= 0 for value in self.collision_size_m
-        ):
+            raise ValueError(f"Asset {self.asset_id} stacking_step_ratio must be in (0, 1]")
+        if self.collision_size_m is not None and any(value <= 0 for value in self.collision_size_m):
             raise ValueError(f"Asset {self.asset_id} must have positive collision dimensions")
+        if self.visual_size_m is not None and any(value <= 0 for value in self.visual_size_m):
+            raise ValueError(f"Asset {self.asset_id} must have positive visual dimensions")
 
     @property
     def physical_size_m(self) -> Vec3:
@@ -115,7 +115,7 @@ class SceneObject:
     @property
     def visual_position_m(self) -> Vec3:
         physical_height = self.asset.physical_size_m[2]
-        visual_height = self.asset.size_m[2]
+        visual_height = (self.asset.visual_size_m or self.asset.size_m)[2]
         return (
             self.position_m[0],
             self.position_m[1],

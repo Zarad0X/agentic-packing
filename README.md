@@ -25,7 +25,7 @@ The stable demonstration target is implemented. It includes the complete
 predicate language described in the paper, planar optimization, occupancy-based
 physical placement, Genesis validation, feedback-driven prompt generation,
 procedural rendering, a five-family benchmark, a dedicated dense-container
-gate, a browser demo, and a frozen seven-model Objaverse CC BY visual-asset pack.
+gate, a browser demo, and a frozen 24-model Objaverse CC BY visual-asset pack.
 The dense examples contain up to 31 total objects and use multi-layer support
 search, explicit same-asset nesting, and distinct open-container geometries
 rather than a single planar packing pass.
@@ -132,24 +132,25 @@ paths.
 
 ## Licensed visual assets
 
-The frozen `objaverse_cc_by_v2` pack supplies seven manually screened GLB models:
-one textured grocery can, one bowl, one handleless stackable tea cup, two plate
-variants, and two non-stackable mug variants. The
-repository stores only the allowlisted manifest and attribution; downloaded
-model bytes stay in an ignored cache. Every file must be CC BY 4.0, match its
-frozen SHA-256, score 3 in Objaverse++, be marked non-transparent, and pass both
-thumbnail and real Genesis visual QA before a scene can use it.
+The frozen `objaverse_cc_by_v3` pack supplies 24 manually screened GLB models
+across 17 categories. In addition to the seven dishware/grocery assets from v2,
+it adds 17 textured books, notebooks, tools, a motor, keyboards, a phone, a
+mouse, pens, and pencils for the complex crate and office demos. The repository
+stores only the allowlisted manifest and attribution; downloaded model bytes
+stay in an ignored cache. Every file must be CC BY 4.0, match its frozen
+SHA-256, score 3 in Objaverse++, be opaque, use embedded base-color textures,
+and pass thumbnail, geometry, and real Genesis dense-scene QA.
 
 Install or validate the pack on a machine with network access:
 
 ```bash
 physcensis assets --action fetch \
-  --manifest assets/manifests/objaverse_cc_by_v2.json \
-  --cache assets/cache/objaverse_cc_by_v2/original
+  --manifest assets/manifests/objaverse_cc_by_v3.json \
+  --cache assets/cache/objaverse_cc_by_v3/original
 
 physcensis assets --action validate \
-  --manifest assets/manifests/objaverse_cc_by_v2.json \
-  --cache assets/cache/objaverse_cc_by_v2/original
+  --manifest assets/manifests/objaverse_cc_by_v3.json \
+  --cache assets/cache/objaverse_cc_by_v3/original
 ```
 
 Render the dense kitchen sink with the licensed meshes:
@@ -159,8 +160,8 @@ CUDA_VISIBLE_DEVICES=0 physcensis generate \
   --program examples/dense_kitchen_sink.json \
   --output output/scenes/dense_kitchen_sink_semantic_stacks_v3 \
   --backend genesis --stability-samples 0 \
-  --asset-manifest assets/manifests/objaverse_cc_by_v2.json \
-  --asset-cache assets/cache/objaverse_cc_by_v2/original
+  --asset-manifest assets/manifests/objaverse_cc_by_v3.json \
+  --asset-cache assets/cache/objaverse_cc_by_v3/original
 ```
 
 Render the three complex dense demos with the same physical/visual boundary:
@@ -171,8 +172,8 @@ for scene in dense_dishwashing_station dense_tool_crate dense_office_tote; do
     --program "examples/${scene}.json" \
     --output "output/scenes/${scene}_genesis" \
     --backend genesis --stability-samples 0 \
-    --asset-manifest assets/manifests/objaverse_cc_by_v2.json \
-    --asset-cache assets/cache/objaverse_cc_by_v2/original
+    --asset-manifest assets/manifests/objaverse_cc_by_v3.json \
+    --asset-cache assets/cache/objaverse_cc_by_v3/original
 done
 ```
 
@@ -185,6 +186,14 @@ rigid-stack proxy. See
 [`docs/asset_library.md`](docs/asset_library.md) and
 [`assets/ATTRIBUTION.md`](assets/ATTRIBUTION.md) for provenance, licensing, and
 the exact integration boundary.
+
+The v3 dense-scene gate rejects meshes that are visually attractive but poor
+packing assets: scenes or multi-object scans, transparent materials, missing
+embedded textures, extreme component counts, candidates that cannot uniformly
+fit the proxy with at least 45% fill on every axis and 20% volume fill, or
+categories whose repeated-instance face/file budget is too large. Two open
+laptop candidates were rejected by this fit gate, so laptops intentionally
+remain procedural until a closed, packing-compatible licensed model passes.
 
 ## Reproduction boundary
 

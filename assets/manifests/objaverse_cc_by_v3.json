@@ -1,0 +1,1128 @@
+{
+  "schema_version": 1,
+  "name": "objaverse_cc_by_v3",
+  "description": "Licensed opaque Objaverse++ score-3 visual meshes selected for repeated dense-container placement. Uniform-fit entries preserve aspect ratio; procedural proxies remain the physics authority.",
+  "license_allowlist": [
+    "CC-BY-4.0"
+  ],
+  "quality_gate": {
+    "minimum_score": 3,
+    "require_opaque": true,
+    "source_url": "https://huggingface.co/datasets/cindyxl/ObjaversePlusPlus",
+    "required_visual_qa_status": "genesis_pass",
+    "required_dense_scene_fit_status": "genesis_pass",
+    "dense_scene_gate": {
+      "scale_mode": "uniform_fit",
+      "minimum_axis_fill": 0.45,
+      "minimum_volume_fill": 0.2,
+      "maximum_geometries": 64,
+      "maximum_connected_components": 256,
+      "maximum_repeated_faces": 2500000,
+      "maximum_repeated_glb_bytes": 314572800,
+      "requires_opaque_materials": true,
+      "requires_embedded_base_color_texture": true,
+      "requires_single_object": true,
+      "requires_non_scene": true,
+      "requires_non_figure": true,
+      "requires_thumbnail_review": true,
+      "requires_final_genesis_dense_scene_review": true
+    }
+  },
+  "assets": [
+    {
+      "category": "book",
+      "uid": "0fa0174b26d34275bf09436927d42623",
+      "title": "Book Free 3D Game Asset",
+      "author": "zack424",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/0fa0174b26d34275bf09436927d42623",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-098/0fa0174b26d34275bf09436927d42623.glb",
+      "filename": "0fa0174b26d34275bf09436927d42623.glb",
+      "sha256": "f669bdc4fb290c7997ba068dfb7307f22f2ef8445e2ab7c5b9b847337eab459e",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -0.0,
+        -1e-06,
+        -90.0
+      ],
+      "raw_bounds_min": [
+        -1.058584332,
+        -1.452943325,
+        -0.396559536
+      ],
+      "raw_bounds_max": [
+        1.159562588,
+        1.452943325,
+        0.396559447
+      ],
+      "fit_bounds_min": [
+        -1.452943325,
+        -1.159562589,
+        -0.396559522
+      ],
+      "fit_bounds_max": [
+        1.452943325,
+        1.058584339,
+        0.396559447
+      ],
+      "face_count": 1732,
+      "vertex_count": 1253,
+      "file_size_bytes": 3256220,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 6,
+      "repeated_face_count": 10392,
+      "repeated_glb_size": 19537320,
+      "connected_component_count": 7,
+      "minimum_axis_fill": 0.512942,
+      "volume_fill_ratio": 0.278943
+    },
+    {
+      "category": "book",
+      "uid": "eaf63782d5574515a89cc138e1d40cf8",
+      "title": "The elder scrolls book We knows",
+      "author": "Vlasov Konstantin",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/eaf63782d5574515a89cc138e1d40cf8",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-014/eaf63782d5574515a89cc138e1d40cf8.glb",
+      "filename": "eaf63782d5574515a89cc138e1d40cf8.glb",
+      "sha256": "4dca8c726394c20f21ca8eeb9981ed5cbafe6c040a1cce7d0a166ff0152d2b96",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        87.767929,
+        -2.089708,
+        108.402028
+      ],
+      "raw_bounds_min": [
+        -0.891578972,
+        -0.192410047,
+        -0.999999997
+      ],
+      "raw_bounds_max": [
+        0.891578972,
+        0.192410048,
+        0.999999993
+      ],
+      "fit_bounds_min": [
+        -0.851406417,
+        -0.676214814,
+        -0.146626041
+      ],
+      "fit_bounds_max": [
+        0.847578798,
+        0.672589061,
+        0.149959402
+      ],
+      "face_count": 544,
+      "vertex_count": 813,
+      "file_size_bytes": 1049272,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 6,
+      "repeated_face_count": 3264,
+      "repeated_glb_size": 6295632,
+      "connected_component_count": 18,
+      "minimum_axis_fill": 0.801988,
+      "volume_fill_ratio": 0.70919
+    },
+    {
+      "category": "bowl",
+      "uid": "826b0539e9394cc3ada0c2cd7faae5f4",
+      "title": "Peruvian Bowl",
+      "author": "Beth Fischer",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/826b0539e9394cc3ada0c2cd7faae5f4",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-015/826b0539e9394cc3ada0c2cd7faae5f4.glb",
+      "filename": "826b0539e9394cc3ada0c2cd7faae5f4.glb",
+      "sha256": "9fb76e05007a7f2f0fc632cb256adb2d624a33069eb394ed12d1afbba2e0099c",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -0.10282440249989655,
+        -0.04551867552856237,
+        -0.10113677449374946
+      ],
+      "raw_bounds_max": [
+        0.09669037287936177,
+        0.04998381432303844,
+        0.10163119427801705
+      ],
+      "face_count": 400000,
+      "vertex_count": 209664,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "stackable": true,
+      "stacking_step_ratio": 0.35,
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "can",
+      "uid": "056e0c896ce34f13b92dca2c39de44d0",
+      "title": "Green Beans",
+      "author": "House Doctor",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/056e0c896ce34f13b92dca2c39de44d0",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/056e0c896ce34f13b92dca2c39de44d0.glb",
+      "filename": "056e0c896ce34f13b92dca2c39de44d0.glb",
+      "sha256": "7c55a2fa7fd8c09c15e0adfbe2f323921f1d8f747b4e7af22320afa388fcd289",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -0.0016674369472581656,
+        -0.007949999917995566,
+        -0.0010591180102302168
+      ],
+      "raw_bounds_max": [
+        0.0041646399198178,
+        -0.00069340989938804,
+        0.004532710955460011
+      ],
+      "face_count": 40952,
+      "vertex_count": 20844,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "cup",
+      "uid": "0c770364d18042148f398a0dcc722d9e",
+      "title": "Le Creuset Style Mug",
+      "author": "phillips.kieran",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/0c770364d18042148f398a0dcc722d9e",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/0c770364d18042148f398a0dcc722d9e.glb",
+      "filename": "0c770364d18042148f398a0dcc722d9e.glb",
+      "sha256": "9572d102052d580b113b2da73bc2c687dad86eaa509546e18beedc2991c06a2c",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -242.79842390993736,
+        -4.8380534494826435,
+        1041.1920382588205
+      ],
+      "raw_bounds_max": [
+        120.3021722536867,
+        314.0598601288522,
+        1340.1267847579584
+      ],
+      "face_count": 58112,
+      "vertex_count": 32042,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "cup",
+      "uid": "4fbb57124fec47d8b216101e19f5d385",
+      "title": "Good Morning Coffee-Cup",
+      "author": "KonstantinAg",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/4fbb57124fec47d8b216101e19f5d385",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-012/4fbb57124fec47d8b216101e19f5d385.glb",
+      "filename": "4fbb57124fec47d8b216101e19f5d385.glb",
+      "sha256": "465ea4bc1d4c8b5e551568f8d75798b54fe605d59d01d8f26a48a2edd82d9b81",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -135.41048897804995,
+        -22.066221237182624,
+        2.7416793342994126
+      ],
+      "raw_bounds_max": [
+        -66.14557406047518,
+        43.78689890169516,
+        46.9007528788618
+      ],
+      "face_count": 107520,
+      "vertex_count": 71185,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "drill",
+      "uid": "af85273c56464aaa835e57f8377ec7ad",
+      "title": "3December - Day 3 - Powertool",
+      "author": "Robbe Vlaeminck",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/af85273c56464aaa835e57f8377ec7ad",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-077/af85273c56464aaa835e57f8377ec7ad.glb",
+      "filename": "af85273c56464aaa835e57f8377ec7ad.glb",
+      "sha256": "648a63343ec4151235661cb1ab144b713092fd7820badaf09607dad9cb5cb94c",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -90.0,
+        0.0,
+        -90.0
+      ],
+      "raw_bounds_min": [
+        195.279724121,
+        -429.690765381,
+        503.453674316
+      ],
+      "raw_bounds_max": [
+        485.324951172,
+        387.945129395,
+        1889.951904297
+      ],
+      "fit_bounds_min": [
+        503.453674316,
+        -485.324951172,
+        -387.945129395
+      ],
+      "fit_bounds_max": [
+        1889.951904297,
+        -195.279724121,
+        429.690765381
+      ],
+      "face_count": 14532,
+      "vertex_count": 10899,
+      "file_size_bytes": 1336932,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 43596,
+      "repeated_glb_size": 4010796,
+      "connected_component_count": 11,
+      "minimum_axis_fill": 0.627578,
+      "volume_fill_ratio": 0.454202
+    },
+    {
+      "category": "hammer",
+      "uid": "6984d8d0f77b462ea908a4463c8f4c72",
+      "title": "Well Worn Hammer",
+      "author": "Jack.McComiskey",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/6984d8d0f77b462ea908a4463c8f4c72",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-121/6984d8d0f77b462ea908a4463c8f4c72.glb",
+      "filename": "6984d8d0f77b462ea908a4463c8f4c72.glb",
+      "sha256": "e3ac3e40306cb2c180139345b182418668599816ca5c7b0b3f1e35b6c4d4f398",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -178.118676,
+        -0.0,
+        90.0
+      ],
+      "raw_bounds_min": [
+        -3.797610962,
+        -0.112660747,
+        -1.279293478
+      ],
+      "raw_bounds_max": [
+        7.39278466,
+        19.246919155,
+        1.279293358
+      ],
+      "fit_bounds_min": [
+        -0.132544467,
+        -3.797610962,
+        -1.8585082
+      ],
+      "fit_bounds_max": [
+        19.236544474,
+        7.39278466,
+        0.698699453
+      ],
+      "face_count": 3120,
+      "vertex_count": 2253,
+      "file_size_bytes": 8245228,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 4,
+      "repeated_face_count": 12480,
+      "repeated_glb_size": 32980912,
+      "connected_component_count": 4,
+      "minimum_axis_fill": 0.628425,
+      "volume_fill_ratio": 0.398831
+    },
+    {
+      "category": "keyboard",
+      "uid": "419cadde3c6e4909bd333366b4307de5",
+      "title": "Retro Keyboard",
+      "author": "ville.eriksen",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/419cadde3c6e4909bd333366b4307de5",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-110/419cadde3c6e4909bd333366b4307de5.glb",
+      "filename": "419cadde3c6e4909bd333366b4307de5.glb",
+      "sha256": "3bc4ff65ed69b5e59de7e3db9af21acb7f702cfcbb553743b9c4cf9819fc3f1b",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -90.000672,
+        0.054781,
+        4e-06
+      ],
+      "raw_bounds_min": [
+        -19.244586945,
+        -4.504931927,
+        -54.70199585
+      ],
+      "raw_bounds_max": [
+        19.433338165,
+        2.992446423,
+        54.557056427
+      ],
+      "fit_bounds_min": [
+        -19.244429657,
+        -54.701973141,
+        -2.980156621
+      ],
+      "fit_bounds_max": [
+        19.436218526,
+        54.557054009,
+        4.487453416
+      ],
+      "face_count": 10880,
+      "vertex_count": 10035,
+      "file_size_bytes": 4199820,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 1,
+      "repeated_face_count": 10880,
+      "repeated_glb_size": 4199820,
+      "connected_component_count": 111,
+      "minimum_axis_fill": 0.809342,
+      "volume_fill_ratio": 0.672814
+    },
+    {
+      "category": "keyboard",
+      "uid": "a25c537932e84ef693de2cdbfc9dd22d",
+      "title": "Keyboards",
+      "author": "3D Share",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/a25c537932e84ef693de2cdbfc9dd22d",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-117/a25c537932e84ef693de2cdbfc9dd22d.glb",
+      "filename": "a25c537932e84ef693de2cdbfc9dd22d.glb",
+      "sha256": "1051d7a02a2ff0b3d63d2278037d10b5054f0b0cdfbae75e0dd591edbc6c4ebb",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        97.222979,
+        -2.078929,
+        90.0
+      ],
+      "raw_bounds_min": [
+        -2.047100067,
+        -0.128700003,
+        -1.050400019
+      ],
+      "raw_bounds_max": [
+        2.406499863,
+        0.046399996,
+        0.317499995
+      ],
+      "fit_bounds_min": [
+        -1.048187523,
+        -2.050349257,
+        -0.212992443
+      ],
+      "fit_bounds_max": [
+        0.31430148,
+        2.408116674,
+        0.213926094
+      ],
+      "face_count": 14738,
+      "vertex_count": 12023,
+      "file_size_bytes": 589852,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 1,
+      "repeated_face_count": 14738,
+      "repeated_glb_size": 589852,
+      "connected_component_count": 106,
+      "minimum_axis_fill": 0.498664,
+      "volume_fill_ratio": 0.295894
+    },
+    {
+      "category": "motor",
+      "uid": "66b2ea9eb6e5468d91d814395036a537",
+      "title": "Electric Motor",
+      "author": "Scarecrow_original",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/66b2ea9eb6e5468d91d814395036a537",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-098/66b2ea9eb6e5468d91d814395036a537.glb",
+      "filename": "66b2ea9eb6e5468d91d814395036a537.glb",
+      "sha256": "972e039db08880f53569c6dd3f627d967756026109ff788c0b836a3316eaa9ab",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        180.0,
+        -90.0,
+        0.0
+      ],
+      "raw_bounds_min": [
+        -0.117096836,
+        -0.112276058,
+        -0.136036653
+      ],
+      "raw_bounds_max": [
+        0.072596839,
+        0.106973948,
+        0.106791666
+      ],
+      "fit_bounds_min": [
+        -0.136036653,
+        -0.106973948,
+        -0.117096836
+      ],
+      "fit_bounds_max": [
+        0.106791666,
+        0.112276058,
+        0.072596839
+      ],
+      "face_count": 35949,
+      "vertex_count": 32828,
+      "file_size_bytes": 4508400,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 2,
+      "repeated_face_count": 71898,
+      "repeated_glb_size": 9016800,
+      "connected_component_count": 17,
+      "minimum_axis_fill": 0.830656,
+      "volume_fill_ratio": 0.718678
+    },
+    {
+      "category": "mouse",
+      "uid": "2b70993763034bef8587d3730c7ca8ff",
+      "title": "Logitech M325 Wireless Mouse",
+      "author": "Lyrus",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/2b70993763034bef8587d3730c7ca8ff",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-041/2b70993763034bef8587d3730c7ca8ff.glb",
+      "filename": "2b70993763034bef8587d3730c7ca8ff.glb",
+      "sha256": "77960dd4e728eea9023b736e548cc3e39eef1499868cfe27537f3c6ad771108a",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        89.999998,
+        -3e-06,
+        0.192984
+      ],
+      "raw_bounds_min": [
+        -4.758433104,
+        -7e-09,
+        -2.766469714
+      ],
+      "raw_bounds_max": [
+        4.733026505,
+        4.094831623,
+        2.76646972
+      ],
+      "fit_bounds_min": [
+        -4.758406173,
+        -2.760807012,
+        -1.82e-07
+      ],
+      "fit_bounds_max": [
+        4.732999574,
+        2.772101037,
+        4.094831669
+      ],
+      "face_count": 1208,
+      "vertex_count": 922,
+      "file_size_bytes": 1883216,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 3624,
+      "repeated_glb_size": 5649648,
+      "connected_component_count": 3,
+      "minimum_axis_fill": 0.831503,
+      "volume_fill_ratio": 0.700851
+    },
+    {
+      "category": "notebook",
+      "uid": "00642d469eaa4b8f9a86abd68e1cc769",
+      "title": "Sketchbook",
+      "author": "lirend",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/00642d469eaa4b8f9a86abd68e1cc769",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/00642d469eaa4b8f9a86abd68e1cc769.glb",
+      "filename": "00642d469eaa4b8f9a86abd68e1cc769.glb",
+      "sha256": "d842200936d1fe64e0d55ccc3da537fd6beafa449a9eee9578065b79781defd0",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -89.427847,
+        0.0,
+        -0.0
+      ],
+      "raw_bounds_min": [
+        -150.613708496,
+        -3.39160037,
+        -105.133666992
+      ],
+      "raw_bounds_max": [
+        150.613708496,
+        27.866083145,
+        108.763381958
+      ],
+      "fit_bounds_min": [
+        -150.613708496,
+        -105.128007447,
+        -26.848942624
+      ],
+      "fit_bounds_max": [
+        150.613708496,
+        108.961861207,
+        3.549502832
+      ],
+      "face_count": 2175,
+      "vertex_count": 2192,
+      "file_size_bytes": 3252364,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 6,
+      "repeated_face_count": 13050,
+      "repeated_glb_size": 19514184,
+      "connected_component_count": 10,
+      "minimum_axis_fill": 0.965526,
+      "volume_fill_ratio": 0.962277
+    },
+    {
+      "category": "notebook",
+      "uid": "fccc83cc82484a7583fb3325431e5257",
+      "title": "Orange Notebook",
+      "author": "GDIarchitects",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/fccc83cc82484a7583fb3325431e5257",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-024/fccc83cc82484a7583fb3325431e5257.glb",
+      "filename": "fccc83cc82484a7583fb3325431e5257.glb",
+      "sha256": "d84e4a841db96433424bd5de839b3ef468deeb43bd4c82081effd28f5b0030c4",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -90.007571,
+        -0.0,
+        90.0
+      ],
+      "raw_bounds_min": [
+        78.765808105,
+        -0.367980301,
+        -246.568557739
+      ],
+      "raw_bounds_max": [
+        188.765808105,
+        12.078660011,
+        -66.568557739
+      ],
+      "fit_bounds_min": [
+        66.568557158,
+        78.765808105,
+        -12.054970735
+      ],
+      "fit_bounds_max": [
+        246.570141173,
+        188.765808105,
+        0.380966573
+      ],
+      "face_count": 3673,
+      "vertex_count": 5569,
+      "file_size_bytes": 1323696,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 6,
+      "repeated_face_count": 22038,
+      "repeated_glb_size": 7942176,
+      "connected_component_count": 17,
+      "minimum_axis_fill": 0.663244,
+      "volume_fill_ratio": 0.572206
+    },
+    {
+      "category": "pen",
+      "uid": "7a09c75d40e84b10acfd4f8c40e08375",
+      "title": "Old Pen",
+      "author": "djetty",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/7a09c75d40e84b10acfd4f8c40e08375",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-085/7a09c75d40e84b10acfd4f8c40e08375.glb",
+      "filename": "7a09c75d40e84b10acfd4f8c40e08375.glb",
+      "sha256": "f93f1163798aba5e5f5df1185bd09acd951a0af639afd1a0eec6ee128beca7ab",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -128.35827,
+        21.790256,
+        -154.870992
+      ],
+      "raw_bounds_min": [
+        -4.149664575,
+        -0.509428024,
+        -3.2082014
+      ],
+      "raw_bounds_max": [
+        4.27449105,
+        0.434722006,
+        2.371759576
+      ],
+      "fit_bounds_min": [
+        -5.100909077,
+        -0.292501938,
+        -0.18120845
+      ],
+      "fit_bounds_max": [
+        4.76579491,
+        0.552794427,
+        0.664087915
+      ],
+      "face_count": 1598,
+      "vertex_count": 1279,
+      "file_size_bytes": 769824,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 4794,
+      "repeated_glb_size": 2309472,
+      "connected_component_count": 1,
+      "minimum_axis_fill": 0.933798,
+      "volume_fill_ratio": 0.933798
+    },
+    {
+      "category": "pen",
+      "uid": "f126e15c0f904fccbd76f9348baea12c",
+      "title": "Pen",
+      "author": "DrewA",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/f126e15c0f904fccbd76f9348baea12c",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-005/f126e15c0f904fccbd76f9348baea12c.glb",
+      "filename": "f126e15c0f904fccbd76f9348baea12c.glb",
+      "sha256": "285f3f774377eca7597e685cd7b9cbbd70194febaf38c3c0063b10e89675bc67",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -89.651222,
+        -9.628785,
+        89.942014
+      ],
+      "raw_bounds_min": [
+        0.008986994,
+        -0.004383683,
+        -0.140202305
+      ],
+      "raw_bounds_max": [
+        0.028175771,
+        0.020236377,
+        0.109326256
+      ],
+      "fit_bounds_min": [
+        -0.10937136,
+        0.009778499,
+        -0.017115643
+      ],
+      "fit_bounds_max": [
+        0.14018439,
+        0.028833431,
+        0.007007865
+      ],
+      "face_count": 1520,
+      "vertex_count": 1274,
+      "file_size_bytes": 563260,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 4560,
+      "repeated_glb_size": 1689780,
+      "connected_component_count": 1,
+      "minimum_axis_fill": 0.789891,
+      "volume_fill_ratio": 0.653708
+    },
+    {
+      "category": "pencil",
+      "uid": "b224b968acc249349e896d429615525e",
+      "title": "Lowpoly Pencil",
+      "author": "Thomas.Osterhammel",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/b224b968acc249349e896d429615525e",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-031/b224b968acc249349e896d429615525e.glb",
+      "filename": "b224b968acc249349e896d429615525e.glb",
+      "sha256": "49200acb7127ce711fac99103b6cca85f998baba5b7e16df98eb2665592e3d3c",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        89.777836,
+        -22.500451,
+        -89.91498
+      ],
+      "raw_bounds_min": [
+        -0.464100003,
+        -0.464100003,
+        -15.822799683
+      ],
+      "raw_bounds_max": [
+        0.464100003,
+        0.464100003,
+        0.516300023
+      ],
+      "fit_bounds_min": [
+        -0.51629671,
+        -0.428815852,
+        -0.462630455
+      ],
+      "fit_bounds_max": [
+        15.824152398,
+        0.428815852,
+        0.425921818
+      ],
+      "face_count": 64,
+      "vertex_count": 54,
+      "file_size_bytes": 657544,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 192,
+      "repeated_glb_size": 1972632,
+      "connected_component_count": 1,
+      "minimum_axis_fill": 0.944734,
+      "volume_fill_ratio": 0.9247
+    },
+    {
+      "category": "pencil",
+      "uid": "f292513de086471e9dffff684d130e4a",
+      "title": "pencil",
+      "author": "togle",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/f292513de086471e9dffff684d130e4a",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-019/f292513de086471e9dffff684d130e4a.glb",
+      "filename": "f292513de086471e9dffff684d130e4a.glb",
+      "sha256": "25ae006c2e6b625f7d66997d6afeb9d6a3ae878e4e4f55ae6e6433e25e0cef1d",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -90.0,
+        14.998951,
+        -89.997421
+      ],
+      "raw_bounds_min": [
+        -0.127972007,
+        -0.127972007,
+        -4.400564194
+      ],
+      "raw_bounds_max": [
+        0.127972007,
+        0.127972007,
+        0.172076002
+      ],
+      "fit_bounds_min": [
+        -4.400564182,
+        -0.123627394,
+        -0.123612073
+      ],
+      "fit_bounds_max": [
+        0.172078729,
+        0.123600693,
+        0.123612073
+      ],
+      "face_count": 650,
+      "vertex_count": 481,
+      "file_size_bytes": 1004224,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 1950,
+      "repeated_glb_size": 3012672,
+      "connected_component_count": 5,
+      "minimum_axis_fill": 0.973187,
+      "volume_fill_ratio": 0.947107
+    },
+    {
+      "category": "phone",
+      "uid": "efb3ef63a12c4b16b5ac0f66bbdf705d",
+      "title": "Simon Phone [Cry of Fear Fan Art]",
+      "author": "Lucas Lauer Gallo",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/efb3ef63a12c4b16b5ac0f66bbdf705d",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-006/efb3ef63a12c4b16b5ac0f66bbdf705d.glb",
+      "filename": "efb3ef63a12c4b16b5ac0f66bbdf705d.glb",
+      "sha256": "ce2ca9a8e5e4347d51e1cc05959a6af7fd10cb0b892eca67e38c32f783735a01",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -0.012524,
+        0.77769,
+        89.999835
+      ],
+      "raw_bounds_min": [
+        -4.98454237,
+        -10.960594177,
+        -1.529762864
+      ],
+      "raw_bounds_max": [
+        5.078297615,
+        11.381729126,
+        1.159573436
+      ],
+      "fit_bounds_min": [
+        -11.381726175,
+        -4.99216246,
+        -1.485053212
+      ],
+      "fit_bounds_max": [
+        10.960480115,
+        5.080823214,
+        1.162331958
+      ],
+      "face_count": 3860,
+      "vertex_count": 3074,
+      "file_size_bytes": 2547864,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 3,
+      "repeated_face_count": 11580,
+      "repeated_glb_size": 7643592,
+      "connected_component_count": 24,
+      "minimum_axis_fill": 0.456586,
+      "volume_fill_ratio": 0.231197
+    },
+    {
+      "category": "plate",
+      "uid": "60a1d227b99b4399aaf80c1f3ac83860",
+      "title": "Polychrome Dish",
+      "author": "Thomas Flynn",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/60a1d227b99b4399aaf80c1f3ac83860",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-003/60a1d227b99b4399aaf80c1f3ac83860.glb",
+      "filename": "60a1d227b99b4399aaf80c1f3ac83860.glb",
+      "sha256": "d713d586d441fccdbe628f00ab1bd7e69b7bef3ca94ad248656ce2f796e6b21b",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -0.12478382945444189,
+        -0.02325214009689836,
+        -0.12478382651570225
+      ],
+      "raw_bounds_max": [
+        0.12478382945444189,
+        0.020144806902359858,
+        0.12478383285059713
+      ],
+      "face_count": 1152,
+      "vertex_count": 610,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "stackable": true,
+      "stacking_step_ratio": 0.55,
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "plate",
+      "uid": "ffbc1f59a2e94267a286d460f948632c",
+      "title": "Dish",
+      "author": "bogdanzloy20280",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/ffbc1f59a2e94267a286d460f948632c",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-070/ffbc1f59a2e94267a286d460f948632c.glb",
+      "filename": "ffbc1f59a2e94267a286d460f948632c.glb",
+      "sha256": "bfb3cb09c54427dfdedf74ae427e8b1b10794d50815336b1cfd5395e868e1595",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -0.9986846828907571,
+        -1.5407712478188424e-07,
+        -0.9986848162104212
+      ],
+      "raw_bounds_max": [
+        0.998684776679422,
+        0.24637813132320188,
+        0.9986847386240354
+      ],
+      "face_count": 656,
+      "vertex_count": 660,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "stackable": true,
+      "stacking_step_ratio": 0.55,
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "saw",
+      "uid": "b840c7cf142d4d718c8099e91624b264",
+      "title": "Tool Assignment - Maria Martinez",
+      "author": "Maria Martinez",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/b840c7cf142d4d718c8099e91624b264",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-141/b840c7cf142d4d718c8099e91624b264.glb",
+      "filename": "b840c7cf142d4d718c8099e91624b264.glb",
+      "sha256": "0257cada0072e22bbfa400900ae7c84a7cac6cac82b5a9a89fd4108c6e75da9f",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        -1.176981,
+        2.247897,
+        0.139982
+      ],
+      "raw_bounds_min": [
+        -50.865100861,
+        -13.457500458,
+        14.490400314
+      ],
+      "raw_bounds_max": [
+        51.340499878,
+        17.861600876,
+        21.638700485
+      ],
+      "fit_bounds_min": [
+        -50.119745351,
+        -13.20549054,
+        13.391199004
+      ],
+      "fit_bounds_max": [
+        52.009285888,
+        18.343860708,
+        20.612109896
+      ],
+      "face_count": 5856,
+      "vertex_count": 3786,
+      "file_size_bytes": 2864452,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 2,
+      "repeated_face_count": 11712,
+      "repeated_glb_size": 5728904,
+      "connected_component_count": 11,
+      "minimum_axis_fill": 0.537349,
+      "volume_fill_ratio": 0.525654
+    },
+    {
+      "category": "stackable cup",
+      "uid": "bad55ce1183a4965896446aa526c7ac2",
+      "title": "Momo-gata Japanese Tea Cup",
+      "author": "Melina.Thadea",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/bad55ce1183a4965896446aa526c7ac2",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-025/bad55ce1183a4965896446aa526c7ac2.glb",
+      "filename": "bad55ce1183a4965896446aa526c7ac2.glb",
+      "sha256": "9e5e3b10314d5d9a1cb0404c680a14aa37951e2b6697c8ada7605353e52b05ae",
+      "source_up_axis": "y",
+      "raw_bounds_min": [
+        -0.01211502048116131,
+        -5.96046434936844e-10,
+        -0.012115032402089995
+      ],
+      "raw_bounds_max": [
+        0.01211502048116131,
+        0.018121829819936378,
+        0.014541513594802161
+      ],
+      "face_count": 6656,
+      "vertex_count": 3571,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "stackable": true,
+      "stacking_step_ratio": 0.32,
+      "dense_scene_fit_status": "genesis_pass"
+    },
+    {
+      "category": "wrench",
+      "uid": "3be07a34145f4bd0bbc2dd01f8fca136",
+      "title": "Wrench",
+      "author": "Kaarel",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "source_url": "https://sketchfab.com/3d-models/3be07a34145f4bd0bbc2dd01f8fca136",
+      "download_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-141/3be07a34145f4bd0bbc2dd01f8fca136.glb",
+      "filename": "3be07a34145f4bd0bbc2dd01f8fca136.glb",
+      "sha256": "e4e1d7cf6af118c3247ff4485a85f83fab9ee33d2a26cd9b35fd999052dcc1da",
+      "source_up_axis": "z",
+      "scale_mode": "uniform_fit",
+      "mesh_euler_deg": [
+        0.309287,
+        1.219169,
+        49.117619
+      ],
+      "raw_bounds_min": [
+        2.980628147,
+        -0.51392003,
+        -1.466310212
+      ],
+      "raw_bounds_max": [
+        7.931025101,
+        4.429942625,
+        -1.088290659
+      ],
+      "fit_bounds_min": [
+        -1.185111184,
+        4.349076006,
+        -1.535363804
+      ],
+      "fit_bounds_max": [
+        5.42305075,
+        5.953542958,
+        -1.158682863
+      ],
+      "face_count": 3220,
+      "vertex_count": 3178,
+      "file_size_bytes": 3021532,
+      "quality_score": 3,
+      "is_transparent": false,
+      "visual_qa_status": "genesis_pass",
+      "dense_scene_fit_status": "genesis_pass",
+      "dense_instance_count": 6,
+      "repeated_face_count": 19320,
+      "repeated_glb_size": 18129192,
+      "connected_component_count": 3,
+      "minimum_axis_fill": 0.528233,
+      "volume_fill_ratio": 0.391605
+    }
+  ]
+}

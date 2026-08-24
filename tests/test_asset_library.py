@@ -87,9 +87,7 @@ class AssetLibraryTest(unittest.TestCase):
             manifest["quality_gate"] = {
                 "minimum_score": 3,
                 "require_opaque": True,
-                "source_url": (
-                    "https://huggingface.co/datasets/cindyxl/ObjaversePlusPlus"
-                ),
+                "source_url": ("https://huggingface.co/datasets/cindyxl/ObjaversePlusPlus"),
             }
             manifest["assets"][0]["quality_score"] = 2
             manifest["assets"][0]["is_transparent"] = False
@@ -109,6 +107,70 @@ class AssetLibraryTest(unittest.TestCase):
             path.write_text(json.dumps(manifest), encoding="utf-8")
             with self.assertRaisesRegex(AssetManifestError, "Genesis visual QA"):
                 LicensedAssetManifest.load(path)
+
+    def test_uniform_fit_preserves_aspect_ratio_and_collision_proxy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = _manifest()
+            asset = manifest["assets"][0]
+            asset.update(
+                {
+                    "scale_mode": "uniform_fit",
+                    "source_up_axis": "z",
+                    "mesh_euler_deg": [0.0, 0.0, 90.0],
+                    "fit_bounds_min": [-2.0, -1.0, -0.25],
+                    "fit_bounds_max": [2.0, 1.0, 0.25],
+                    "dense_scene_fit_status": "audit_pass",
+                }
+            )
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            cache = root / "cache"
+            cache.mkdir()
+            (cache / f"{'a' * 32}.glb").write_bytes(b"licensed-mesh")
+
+            catalog = ManifestAssetCatalog.load(manifest_path, cache)
+            resolved = catalog.resolve("cup_0", "ceramic cup")
+
+            self.assertEqual(resolved.mesh_scale[0], resolved.mesh_scale[1])
+            self.assertEqual(resolved.mesh_scale[1], resolved.mesh_scale[2])
+            self.assertEqual(resolved.mesh_euler_deg, (0.0, 0.0, 90.0))
+            self.assertEqual(resolved.size_m, (0.085, 0.085, 0.10))
+            self.assertIsNone(resolved.collision_size_m)
+            self.assertEqual(resolved.dense_scene_fit_status, "audit_pass")
+            self.assertIsNotNone(resolved.visual_size_m)
+            assert resolved.visual_size_m is not None
+            self.assertLessEqual(resolved.visual_size_m[0], resolved.size_m[0])
+            self.assertLessEqual(resolved.visual_size_m[1], resolved.size_m[1])
+            self.assertLessEqual(resolved.visual_size_m[2], resolved.size_m[2])
+
+    def test_manifest_enforces_dense_scene_genesis_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "manifest.json"
+            manifest = _manifest()
+            manifest["quality_gate"] = {"required_dense_scene_fit_status": "genesis_pass"}
+            manifest["assets"][0]["dense_scene_fit_status"] = "audit_pass"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(AssetManifestError, "dense-scene Genesis QA"):
+                LicensedAssetManifest.load(path)
+
+    def test_category_matching_uses_word_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = _manifest()
+            manifest["assets"][0]["category"] = "pen"
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            cache = root / "cache"
+            cache.mkdir()
+            (cache / f"{'a' * 32}.glb").write_bytes(b"licensed-mesh")
+
+            catalog = ManifestAssetCatalog.load(manifest_path, cache)
+            crate = catalog.resolve("tool_crate_0", "a large open tool crate")
+            pen = catalog.resolve("pen_0", "an old pen")
+
+            self.assertEqual(crate.source, "procedural")
+            self.assertEqual(pen.source, "Objaverse 1.0 / Sketchfab")
 
 
 if __name__ == "__main__":

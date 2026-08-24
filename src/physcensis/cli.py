@@ -161,6 +161,7 @@ def _assets(args: argparse.Namespace) -> int:
         "minimum_quality_score": manifest.minimum_quality_score,
         "require_opaque": manifest.require_opaque,
         "required_visual_qa_status": manifest.required_visual_qa_status,
+        "required_dense_scene_fit_status": manifest.required_dense_scene_fit_status,
         "verified_sha256": hashes,
     }
     print(json.dumps(report, indent=2))
@@ -233,12 +234,8 @@ def build_parser() -> argparse.ArgumentParser:
         "assets", help="fetch or verify a frozen licensed-asset manifest"
     )
     assets.add_argument("--action", choices=("validate", "fetch"), default="validate")
-    assets.add_argument(
-        "--manifest", default="assets/manifests/objaverse_cc_by_v2.json"
-    )
-    assets.add_argument(
-        "--cache", default="assets/cache/objaverse_cc_by_v2/original"
-    )
+    assets.add_argument("--manifest", default="assets/manifests/objaverse_cc_by_v3.json")
+    assets.add_argument("--cache", default="assets/cache/objaverse_cc_by_v3/original")
     assets.set_defaults(handler=_assets)
     return parser
 
