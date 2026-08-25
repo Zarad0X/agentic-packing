@@ -104,6 +104,15 @@ support violations, and a composite organization score. These measurements are
 independent of visual meshes and are checked before the final assembled-scene
 Genesis simulation.
 
+The same support graph also drives a separate presentation-only contact pass.
+It recursively preserves floor contact and aligns each upper visual bottom to
+the highest visible top among its recorded supporters. This removes apparent
+floating caused by a conservative collision proxy being taller than its fitted
+GLB, while leaving Genesis collision, stability, and settled poses unchanged.
+The evaluator records pre-alignment gap, applied correction, final contact gap,
+violations above 5 mm, and unresolved support cycles; organized acceptance
+requires zero final-gap violations and zero unresolved supports.
+
 ## Program call flow
 
 ```mermaid

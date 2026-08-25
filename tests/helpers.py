@@ -66,6 +66,9 @@ def make_test_config() -> ReproductionConfig:
                     "maximum_load_bearing_violation_count": 0,
                     "maximum_semantic_support_violation_count": 0,
                     "minimum_organization_score": 0.75,
+                    "maximum_visual_contact_gap_m": 0.005,
+                    "maximum_visual_contact_violation_count": 0,
+                    "maximum_unresolved_visual_support_count": 0,
                 }
             },
         }

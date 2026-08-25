@@ -86,8 +86,8 @@ The stable-demo completion gate has been met on the checked-in implementation:
 | Grocery basket | 23 total / 22 packed, 3 layers, 47.9% fill, 0.224 mm settle | Real Genesis, 400 steps |
 | Kitchen sink | 24 total / 23 packed, 5 post-simulation layers, 31.3% fill, 4.186 mm settle | Real Genesis, 400 steps |
 | Dishwashing station | 31 total / 30 packed, 10 layers, 46.2% fill, 4 stacks / 18 nested, 0.472 mm settle | Real Genesis, 400 steps; licensed opaque dishware overlays |
-| Tool crate | 24 total / 23 packed, 80.7% floor coverage, 81.2% organization, 0.673 mm settle | Real Genesis, 400 steps; floor-first fill, grouped tools, zero load/semantic support violations |
-| Office tote | 28 total / 27 packed, 89.8% floor coverage, 87.1% organization, 0.978 mm settle | Real Genesis, 400 steps; grouped paper/electronics/small fillers, zero load/semantic support violations |
+| Tool crate | 24 total / 23 packed, 80.7% floor coverage, 81.2% organization, 0.673 mm settle | Real Genesis, 400 steps; 58.7 mm maximum pre-alignment visual gap reduced to 0, zero load/semantic/visual-support violations |
+| Office tote | 28 total / 27 packed, 89.8% floor coverage, 87.1% organization, 0.978 mm settle | Real Genesis, 400 steps; 16.8 mm maximum pre-alignment visual gap reduced to 0, zero load/semantic/visual-support violations |
 | Interactive demo | prompt-to-preview/export verified | Progress states, measurements, predicates, and downloadable scene JSON |
 | Licensed asset pack v3 | 24/24 files validated | CC BY 4.0, SHA-256, Objaverse++ score 3, opaque and embedded-texture only, proxy-fit audit plus dense Genesis QA |
 

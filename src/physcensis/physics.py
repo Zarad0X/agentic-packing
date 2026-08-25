@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol
 
@@ -13,6 +13,7 @@ from physcensis.geometry import (
     point_in_convex_polygon,
 )
 from physcensis.types import SceneState, SimulationResult
+from physcensis.visual_contact import build_visual_contact_layout
 
 
 class PhysicsBackend(Protocol):
@@ -236,6 +237,7 @@ class GenesisBackend:
                 roughness=0.72,
             ),
         )
+        visual_layout = build_visual_contact_layout(scene) if visual_context else None
         entities = self._add_semantic_stack_entities(
             simulation,
             scene,
@@ -249,14 +251,25 @@ class GenesisBackend:
         for object_id, obj in scene.objects.items():
             if object_id in stacked_ids:
                 if visual_context:
+                    assert visual_layout is not None
                     has_mesh_visual = (
                         obj.asset.mesh_path is not None
                         and Path(obj.asset.mesh_path).is_file()
                     )
                     if has_mesh_visual:
-                        self._add_mesh_visual(simulation, obj)
+                        self._add_mesh_visual(
+                            simulation,
+                            obj,
+                            visual_center_m=visual_layout.centers_m[object_id],
+                        )
                     else:
-                        self._add_object_details(simulation, obj)
+                        self._add_object_details(
+                            simulation,
+                            self._visual_object(
+                                obj,
+                                visual_layout.centers_m[object_id],
+                            ),
+                        )
                 continue
             physical_size = obj.asset.physical_size_m
             volume = physical_size[0] * physical_size[1] * physical_size[2]
@@ -276,6 +289,17 @@ class GenesisBackend:
                 "plant",
                 "saw",
             }
+            visible_proxy_obj = obj
+            if (
+                visual_context
+                and not is_container
+                and not (custom_visual or has_mesh_visual)
+            ):
+                assert visual_layout is not None
+                visible_proxy_obj = self._visual_object(
+                    obj,
+                    visual_layout.centers_m[object_id],
+                )
             if obj.asset.visual_shape in {
                 "bottle",
                 "bowl",
@@ -286,7 +310,7 @@ class GenesisBackend:
                 "plate",
             }:
                 morph = gs.morphs.Cylinder(
-                    pos=obj.position_m,
+                    pos=visible_proxy_obj.position_m,
                     euler=(0.0, 0.0, math.degrees(obj.yaw_rad)),
                     height=physical_size[2],
                     radius=min(physical_size[0], physical_size[1]) / 2.0,
@@ -295,7 +319,7 @@ class GenesisBackend:
                 )
             else:
                 morph = gs.morphs.Box(
-                    pos=obj.position_m,
+                    pos=visible_proxy_obj.position_m,
                     euler=(0.0, 0.0, math.degrees(obj.yaw_rad)),
                     size=physical_size,
                     fixed=True if is_container else obj.fixed,
@@ -323,9 +347,18 @@ class GenesisBackend:
                 if visual_context:
                     self._add_container_visuals(simulation, obj)
             if has_mesh_visual:
-                self._add_mesh_visual(simulation, obj)
+                assert visual_layout is not None
+                self._add_mesh_visual(
+                    simulation,
+                    obj,
+                    visual_center_m=visual_layout.centers_m[object_id],
+                )
             elif visual_context and not is_container:
-                self._add_object_details(simulation, obj)
+                assert visual_layout is not None
+                self._add_object_details(
+                    simulation,
+                    self._visual_object(obj, visual_layout.centers_m[object_id]),
+                )
         return simulation, entities
 
     def _add_semantic_stack_entities(
@@ -384,17 +417,29 @@ class GenesisBackend:
                 )
         return bindings
 
-    def _add_mesh_visual(self, simulation, obj) -> None:
+    @staticmethod
+    def _visual_object(obj, visual_center_m):
+        """Move a procedural visual without changing its physical proxy size."""
+        physical_height = obj.asset.physical_size_m[2]
+        visual_height = (obj.asset.visual_size_m or obj.asset.size_m)[2]
+        physical_center_z = (
+            visual_center_m[2] - (visual_height - physical_height) / 2.0
+        )
+        return replace(
+            obj,
+            position_m=(obj.position_m[0], obj.position_m[1], physical_center_z),
+        )
+
+    def _add_mesh_visual(self, simulation, obj, *, visual_center_m) -> None:
         """Overlay a licensed textured mesh on the stable proxy collision body."""
         gs = self._gs
         assert obj.asset.mesh_path is not None
         dx, dy, dz = obj.asset.mesh_offset_m
         cosine, sine = math.cos(obj.yaw_rad), math.sin(obj.yaw_rad)
-        visual_position = obj.visual_position_m
         position = (
-            visual_position[0] + cosine * dx - sine * dy,
-            visual_position[1] + sine * dx + cosine * dy,
-            visual_position[2] + dz,
+            visual_center_m[0] + cosine * dx - sine * dy,
+            visual_center_m[1] + sine * dx + cosine * dy,
+            visual_center_m[2] + dz,
         )
         mesh_euler = obj.asset.mesh_euler_deg
         simulation.add_entity(

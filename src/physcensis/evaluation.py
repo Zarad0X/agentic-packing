@@ -149,6 +149,15 @@ def _run_gate(
                     "organization_score": result.feedback.measurements.get(
                         "organization_score", 0.0
                     ),
+                    "maximum_visual_contact_gap_m": result.feedback.measurements.get(
+                        "maximum_visual_contact_gap_m", 0.0
+                    ),
+                    "visual_contact_violation_count": result.feedback.measurements.get(
+                        "visual_contact_violation_count", 0.0
+                    ),
+                    "unresolved_visual_support_count": result.feedback.measurements.get(
+                        "unresolved_visual_support_count", 0.0
+                    ),
                     "issue_codes": [issue.code for issue in result.feedback.issues],
                 }
             )
@@ -174,6 +183,15 @@ def _run_gate(
         gate.get("maximum_semantic_support_violation_count", 1.0e9)
     )
     minimum_organization_score = float(gate.get("minimum_organization_score", 0.0))
+    maximum_visual_contact_gap = float(
+        gate.get("maximum_visual_contact_gap_m", float("inf"))
+    )
+    maximum_visual_contact_violations = float(
+        gate.get("maximum_visual_contact_violation_count", float("inf"))
+    )
+    maximum_unresolved_visual_supports = float(
+        gate.get("maximum_unresolved_visual_support_count", float("inf"))
+    )
     success_rate = len(successful) / total
     object_fraction = sum(run["object_count"] >= minimum_objects for run in runs) / total
     mean_settle = (
@@ -191,6 +209,15 @@ def _run_gate(
         float(run["semantic_support_violation_count"]) for run in runs
     )
     organization_score = min(float(run["organization_score"]) for run in runs)
+    visual_contact_gap = max(
+        float(run["maximum_visual_contact_gap_m"]) for run in runs
+    )
+    visual_contact_violations = max(
+        float(run["visual_contact_violation_count"]) for run in runs
+    )
+    unresolved_visual_supports = max(
+        float(run["unresolved_visual_support_count"]) for run in runs
+    )
     family_summary = {}
     for family in (name.removesuffix(".json") for name in scene_families):
         family_runs = [run for run in runs if run["family"] == family]
@@ -220,6 +247,15 @@ def _run_gate(
             "minimum_organization_score": min(
                 run["organization_score"] for run in family_runs
             ),
+            "maximum_visual_contact_gap_m": max(
+                run["maximum_visual_contact_gap_m"] for run in family_runs
+            ),
+            "maximum_visual_contact_violation_count": max(
+                run["visual_contact_violation_count"] for run in family_runs
+            ),
+            "maximum_unresolved_visual_support_count": max(
+                run["unresolved_visual_support_count"] for run in family_runs
+            ),
         }
     return {
         "backend": backend.name,
@@ -236,6 +272,9 @@ def _run_gate(
         "maximum_load_bearing_violation_count": load_violations,
         "maximum_semantic_support_violation_count": semantic_violations,
         "minimum_organization_score": organization_score,
+        "maximum_visual_contact_gap_m": visual_contact_gap,
+        "maximum_visual_contact_violation_count": visual_contact_violations,
+        "maximum_unresolved_visual_support_count": unresolved_visual_supports,
         "thresholds": {
             "minimum_success_rate": required_success_rate,
             "minimum_objects": minimum_objects,
@@ -249,6 +288,13 @@ def _run_gate(
             "maximum_load_bearing_violation_count": maximum_load_violations,
             "maximum_semantic_support_violation_count": maximum_semantic_violations,
             "minimum_organization_score": minimum_organization_score,
+            "maximum_visual_contact_gap_m": maximum_visual_contact_gap,
+            "maximum_visual_contact_violation_count": (
+                maximum_visual_contact_violations
+            ),
+            "maximum_unresolved_visual_support_count": (
+                maximum_unresolved_visual_supports
+            ),
         },
         "passed": (
             success_rate >= required_success_rate
@@ -262,6 +308,9 @@ def _run_gate(
             and load_violations <= maximum_load_violations
             and semantic_violations <= maximum_semantic_violations
             and organization_score >= minimum_organization_score
+            and visual_contact_gap <= maximum_visual_contact_gap
+            and visual_contact_violations <= maximum_visual_contact_violations
+            and unresolved_visual_supports <= maximum_unresolved_visual_supports
         ),
         "families": family_summary,
         "failed_runs": [run for run in runs if not run["success"]],

@@ -78,6 +78,14 @@ class PipelineTest(unittest.TestCase):
                 self.assertGreaterEqual(
                     result.feedback.measurements["organization_score"], 0.75
                 )
+                self.assertLessEqual(
+                    result.feedback.measurements["maximum_visual_contact_gap_m"],
+                    0.005,
+                )
+                self.assertEqual(
+                    result.feedback.measurements["visual_contact_violation_count"],
+                    0.0,
+                )
                 plan = result.scene.metadata["storage_plans"][0]
                 bottom_count = len(plan["bottom_layer_ids"])
                 self.assertEqual(

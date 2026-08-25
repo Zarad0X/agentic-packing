@@ -42,3 +42,6 @@ class EvaluationTest(unittest.TestCase):
         self.assertEqual(report["maximum_load_bearing_violation_count"], 0.0)
         self.assertEqual(report["maximum_semantic_support_violation_count"], 0.0)
         self.assertGreaterEqual(report["minimum_organization_score"], 0.75)
+        self.assertLessEqual(report["maximum_visual_contact_gap_m"], 0.005)
+        self.assertEqual(report["maximum_visual_contact_violation_count"], 0.0)
+        self.assertEqual(report["maximum_unresolved_visual_support_count"], 0.0)

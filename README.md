@@ -199,7 +199,12 @@ done
 
 External meshes are presentation overlays only. The deterministic procedural
 proxy remains the collision and stability authority, so changing a visual model
-cannot silently change the accepted packing result. A `nested` request is
+cannot silently change the accepted packing result. For presentation renders,
+the visible overlays are recursively aligned to the recorded support graph: a
+floor item keeps its proxy-aligned bottom, while each upper item meets the
+highest visible surface of its supporters. The organized gate's visual-gap,
+violation, and unresolved-support checks make this alignment observable without
+changing collision geometry. A `nested` request is
 accepted only for manifest entries marked `stackable`; each accepted column is
 recorded in `scene.metadata.semantic_stacks` and simulated as one freely moving
 rigid-stack proxy. See

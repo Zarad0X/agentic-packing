@@ -28,6 +28,7 @@ from physcensis.types import (
     SceneState,
     SolveReport,
 )
+from physcensis.visual_contact import build_visual_contact_layout
 
 
 class PhysicalSolver:
@@ -891,7 +892,7 @@ class PhysicalSolver:
             for stack in stacks
             for object_id in stack.get("member_ids", [])
         }
-        return {
+        metrics = {
             "container_item_count": float(len(packed_items)),
             "packing_fraction": packed_volume / max(inner_volume, 1.0e-9),
             "packing_layer_count": float(layer_count),
@@ -908,6 +909,8 @@ class PhysicalSolver:
                 1.0 if stacks else 0.0
             ),
         }
+        metrics.update(build_visual_contact_layout(scene).metrics())
+        return metrics
 
     def _first_physically_valid(
         self,
