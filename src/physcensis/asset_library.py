@@ -11,7 +11,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-from physcensis.assets import PrimitiveAssetCatalog
+from physcensis.assets import AssetNotFoundError, PrimitiveAssetCatalog
 from physcensis.types import AssetRecord, PlacementProgram
 
 ALLOWED_LICENSES = frozenset({"CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0"})
@@ -368,6 +368,7 @@ class ManifestAssetCatalog:
         for entry in manifest.entries:
             by_category.setdefault(entry.category, []).append(entry)
         self.by_category = {key: tuple(values) for key, values in by_category.items()}
+        self.by_uid = {entry.uid: entry for entry in manifest.entries}
 
     @classmethod
     def load(cls, manifest_path: str | Path, cache_dir: str | Path) -> ManifestAssetCatalog:
@@ -399,6 +400,22 @@ class ManifestAssetCatalog:
             return base
         variants = self.by_category[matches[0]]
         entry = variants[self._variant_index(object_id, len(variants))]
+        return self._overlay_entry(base, object_id, entry)
+
+    def resolve_uid(self, object_id: str, uid: str) -> AssetRecord:
+        """Resolve one exact allowlisted model rather than selecting a variant."""
+        entry = self.by_uid.get(uid)
+        if entry is None:
+            raise AssetNotFoundError(f"Licensed asset UID is not in the manifest: {uid}")
+        base = self.fallback.resolve(object_id, entry.category)
+        return self._overlay_entry(base, object_id, entry)
+
+    def _overlay_entry(
+        self,
+        base: AssetRecord,
+        object_id: str,
+        entry: LicensedAssetEntry,
+    ) -> AssetRecord:
         mesh_scale, mesh_offset, visual_size = entry.mesh_transform(base.size_m)
         return replace(
             base,

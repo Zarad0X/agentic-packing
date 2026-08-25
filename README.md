@@ -26,7 +26,8 @@ predicate language described in the paper, planar optimization, occupancy-based
 physical placement, Genesis validation, feedback-driven prompt generation,
 procedural rendering, a five-family benchmark, a dedicated dense-container
 gate, a semantic organization gate, a browser demo, and a frozen 24-model
-Objaverse CC BY visual-asset pack.
+Objaverse CC BY visual-asset pack. A separate fixed-inventory entry point accepts
+around 20 user-specified object instances and optimizes only their final arrangement.
 The dense examples contain up to 31 total objects and use multi-layer support
 search, explicit same-asset nesting, and distinct open-container geometries
 rather than a single planar packing pass.
@@ -73,6 +74,56 @@ CUDA_VISIBLE_DEVICES=0 physcensis prompt \
 `--stability-samples 0` keeps the interactive path fast while still running one
 400-step final-scene Genesis validation. Set it to `64` to run the paper-sized
 11D perturbation estimate as well.
+
+## Arrange a fixed inventory
+
+`arrange` is the arrangement-only entry point for the practical setting where
+the object instances already exist. The input names one target container and
+lists every supplied object separately. Object IDs and count are immutable: the
+planner may change position, yaw, layer, and support, but it never substitutes,
+drops, or invents an item.
+
+Run the included 20-object example:
+
+```bash
+physcensis arrange \
+  --inventory examples/inventory_tool_crate.json \
+  --output output/scenes/inventory_tool_crate \
+  --backend quasistatic --stability-samples 0
+```
+
+The inventory schema is deliberately smaller than the predicate language:
+
+```json
+{
+  "container": {"object_id": "my_crate", "category": "tool crate"},
+  "objects": [
+    {"object_id": "my_drill", "category": "drill"},
+    {
+      "object_id": "my_wrench",
+      "category": "wrench",
+      "asset_uid": "3be07a34145f4bd0bbc2dd01f8fca136"
+    }
+  ],
+  "arrangement": {"allow_protrusion_m": 0.14}
+}
+```
+
+An `asset_uid` locks that object to one exact allowlisted model and therefore
+requires `--asset-manifest` and `--asset-cache`. Without it, the selected
+catalog resolves a deterministic category model. A user-owned model can be
+specified instead with an inline `asset` object containing at least `size_m`
+and optionally `mesh_path`, mass, friction, support probability, transforms,
+and provenance. Relative mesh paths resolve from the inventory file; the file
+hash is frozen into `scene.json`. Mesh coordinates are assumed to already use
+the declared scale, while `size_m` or `collision_size_m` remains the physical
+proxy authority.
+
+The planner exhausts feasible bottom placements globally before opening upper
+layers, then enforces semantic and load-compatible supports. If the complete
+set cannot fit, the command fails and reports `unplaced_object_ids`; it never
+returns a deceptively successful partial arrangement. Use `--backend genesis`
+for the final assembled-scene physical validation and PNG render.
 
 ## Natural-language agent
 

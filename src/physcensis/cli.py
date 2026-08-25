@@ -64,6 +64,39 @@ def _generate(args: argparse.Namespace) -> int:
     return 0 if result.success else 2
 
 
+def _arrange(args: argparse.Namespace) -> int:
+    config = _config(args)
+    backend = _backend(args.backend, config)
+    inventory_path = Path(args.inventory)
+    with inventory_path.open("r", encoding="utf-8") as stream:
+        payload = json.load(stream)
+    pipeline = ScenePipeline(config, backend, catalog=_catalog(args))
+    result = pipeline.run_inventory(
+        payload,
+        base_dir=inventory_path.parent,
+        output_dir=args.output,
+    )
+    supplied_ids = result.scene.metadata.get("inventory_input_object_ids", [])
+    summary = {
+        "success": result.success,
+        "inventory_object_count": len(supplied_ids),
+        "arranged_object_ids": result.scene.metadata.get("physical_placement_order", []),
+        "feedback": result.feedback.summary,
+        "measurements": dict(result.feedback.measurements),
+        "issues": [
+            {
+                "code": issue.code,
+                "message": issue.message,
+                "details": dict(issue.details),
+            }
+            for issue in result.feedback.issues
+        ],
+        "output": str(args.output) if result.artifacts else None,
+    }
+    print(json.dumps(summary, indent=2))
+    return 0 if result.success else 2
+
+
 def _prompt(args: argparse.Namespace) -> int:
     config = _config(args)
     backend = _backend(args.backend, config)
@@ -192,6 +225,22 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--stability-samples", type=int)
     _add_asset_catalog_args(generate)
     generate.set_defaults(handler=_generate)
+
+    arrange = subparsers.add_parser(
+        "arrange",
+        help="arrange one explicit fixed-object inventory",
+    )
+    arrange.add_argument("--config", default="configs/paper.yaml")
+    arrange.add_argument("--inventory", required=True)
+    arrange.add_argument("--output", required=True)
+    arrange.add_argument(
+        "--backend",
+        choices=("quasistatic", "genesis"),
+        default="quasistatic",
+    )
+    arrange.add_argument("--stability-samples", type=int)
+    _add_asset_catalog_args(arrange)
+    arrange.set_defaults(handler=_arrange)
 
     prompt = subparsers.add_parser("prompt", help="generate a scene from natural language")
     prompt.add_argument("--config", default="configs/paper.yaml")

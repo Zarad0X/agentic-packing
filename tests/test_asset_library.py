@@ -172,6 +172,24 @@ class AssetLibraryTest(unittest.TestCase):
             self.assertEqual(crate.source, "procedural")
             self.assertEqual(pen.source, "Objaverse 1.0 / Sketchfab")
 
+    def test_exact_uid_resolution_preserves_requested_model(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(_manifest()), encoding="utf-8")
+            cache = root / "cache"
+            cache.mkdir()
+            uid = "a" * 32
+            (cache / f"{uid}.glb").write_bytes(b"licensed-mesh")
+            catalog = ManifestAssetCatalog.load(manifest_path, cache)
+
+            resolved = catalog.resolve_uid("favorite_mug", uid)
+
+            self.assertEqual(resolved.asset_id, f"objaverse:{uid}:favorite_mug")
+            self.assertEqual(resolved.description, "cup")
+            with self.assertRaisesRegex(LookupError, "not in the manifest"):
+                catalog.resolve_uid("missing", "b" * 32)
+
 
 if __name__ == "__main__":
     unittest.main()

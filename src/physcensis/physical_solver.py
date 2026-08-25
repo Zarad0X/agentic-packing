@@ -80,6 +80,71 @@ class PhysicalSolver:
                 )
             return SolveReport(False, working, issues, solved_object_ids=solved)
 
+        return self._finalize_scene(working, solved, issues, stability_values)
+
+    def arrange_inventory(
+        self,
+        scene: SceneState,
+        container_id: str,
+        objects: list[SceneObject],
+        *,
+        allow_protrusion_m: float = 0.0,
+    ) -> SolveReport:
+        """Arrange a fixed set of object instances without replacing or dropping any."""
+        working = scene.clone()
+        if container_id not in working.objects:
+            issue = Issue("inventory_container_missing", f"Unknown container: {container_id}")
+            return SolveReport(False, working, [issue])
+        container = working.get(container_id)
+        if container.asset.container_inner_size_m is None:
+            issue = Issue(
+                "inventory_not_a_container",
+                f"Asset {container_id} has no inner volume",
+                container_id,
+            )
+            return SolveReport(False, working, [issue])
+
+        supplied_ids = [obj.object_id for obj in objects]
+        working.metadata.update(
+            {
+                "arrangement_mode": "fixed_inventory",
+                "inventory_container_id": container_id,
+                "inventory_input_object_ids": supplied_ids,
+                "inventory_object_count": len(supplied_ids),
+                "inventory_asset_ids": {
+                    obj.object_id: obj.asset.asset_id for obj in objects
+                },
+            }
+        )
+        accepted = self._place_organized_objects(
+            working,
+            [replace(obj) for obj in objects],
+            container,
+            {"allow_protrusion_m": allow_protrusion_m},
+        )
+        if len(accepted) != len(objects):
+            rejected_ids = list(working.metadata.pop("organized_failure_ids", supplied_ids))
+            issue = Issue(
+                "inventory_no_complete_arrangement",
+                "The complete inventory does not fit under the current geometry and support rules",
+                object_id=rejected_ids[0] if rejected_ids else None,
+                details={
+                    "unplaced_object_ids": rejected_ids,
+                    "supplied_object_count": len(supplied_ids),
+                    "placed_object_count": 0,
+                },
+            )
+            return SolveReport(False, working, [issue])
+        return self._finalize_scene(working, accepted, [])
+
+    def _finalize_scene(
+        self,
+        working: SceneState,
+        solved: list[str],
+        issues: list[Issue],
+        stability_values: list[float] | None = None,
+    ) -> SolveReport:
+        """Run the one authoritative assembled-scene simulation and metrics pass."""
         simulation = self.backend.simulate(working, self.config.physical.settle_steps)
         for object_id, position in simulation.final_positions_m.items():
             if object_id in working.objects:

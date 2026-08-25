@@ -15,18 +15,23 @@ classDiagram
     class PredicateParser {
       +parse(payload: list) PlacementProgram
     }
+    class InventoryParser {
+      +parse(payload: dict) InventorySpec
+    }
     class AssetCatalog {
       +resolve(description: str) AssetRecord
     }
     class ManifestAssetCatalog {
       +load(manifest, cache) ManifestAssetCatalog
       +resolve(description: str) AssetRecord
+      +resolve_uid(object_id: str, uid: str) AssetRecord
     }
     class SpatialSolver {
       +solve(program: PlacementProgram, scene: SceneState) SolveReport
     }
     class PhysicalSolver {
       +solve(program: PlacementProgram, scene: SceneState) SolveReport
+      +arrange_inventory(scene, objects) SolveReport
     }
     class PhysicsBackend {
       <<Protocol>>
@@ -41,12 +46,14 @@ classDiagram
     class ScenePipeline {
       +generate(prompt: str) GenerationResult
       +run_program(program: PlacementProgram) GenerationResult
+      +run_inventory(payload: dict) GenerationResult
     }
     class SceneRenderer {
       +render(scene: SceneState, output_dir: Path) RenderArtifacts
     }
 
     ScenePipeline --> PredicateParser
+    ScenePipeline --> InventoryParser
     ScenePipeline --> AssetCatalog
     ManifestAssetCatalog --|> AssetCatalog
     ScenePipeline --> SpatialSolver
@@ -113,6 +120,16 @@ The evaluator records pre-alignment gap, applied correction, final contact gap,
 violations above 5 mm, and unresolved support cycles; organized acceptance
 requires zero final-gap violations and zero unresolved supports.
 
+The fixed-inventory path bypasses agent proposal and predicate-based object
+creation. `InventoryParser` validates one explicit container plus a unique list
+of object instances. Each instance resolves either through its category, an
+exact allowlisted manifest UID, or a user-provided inline asset record. The
+pipeline then calls the same global organized planner and the same single final
+physics simulation used by predicate scenes. Input IDs, resolved asset IDs,
+requested UIDs, placement order, and support provenance are serialized. An
+incomplete solution is a hard failure with explicit unplaced IDs, so identity
+and cardinality cannot change silently.
+
 ## Program call flow
 
 ```mermaid
@@ -164,7 +181,7 @@ sequenceDiagram
 ## Dependency order
 
 1. `config`, `types`, `geometry`
-2. `predicates`, `assets`, `asset_library`
+2. `predicates`, `inventory`, `assets`, `asset_library`
 3. `spatial_solver`
 4. `occupancy`, `physics`, `stability`, `physical_solver`
 5. `feedback`, `agent`, `pipeline`

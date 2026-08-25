@@ -1,0 +1,33 @@
+{
+  "container": {
+    "object_id": "my_tool_crate",
+    "category": "tool crate",
+    "position_xy_m": [0.0, 0.0],
+    "yaw_deg": 0.0
+  },
+  "objects": [
+    {"object_id": "motor_left", "category": "motor"},
+    {"object_id": "motor_right", "category": "motor"},
+    {"object_id": "drill_red", "category": "drill"},
+    {"object_id": "drill_blue", "category": "drill"},
+    {"object_id": "saw_long", "category": "saw"},
+    {"object_id": "saw_short", "category": "saw"},
+    {"object_id": "hammer_claw", "category": "hammer"},
+    {"object_id": "hammer_ball", "category": "hammer"},
+    {"object_id": "hammer_small", "category": "hammer"},
+    {"object_id": "wrench_08", "category": "wrench"},
+    {"object_id": "wrench_10", "category": "wrench"},
+    {"object_id": "wrench_12", "category": "wrench"},
+    {"object_id": "wrench_14", "category": "wrench"},
+    {"object_id": "wrench_17", "category": "wrench"},
+    {"object_id": "wrench_19", "category": "wrench"},
+    {"object_id": "spray_can_red", "category": "can"},
+    {"object_id": "spray_can_blue", "category": "can"},
+    {"object_id": "spray_can_green", "category": "can"},
+    {"object_id": "spray_can_black", "category": "can"},
+    {"object_id": "spray_can_white", "category": "can"}
+  ],
+  "arrangement": {
+    "allow_protrusion_m": 0.14
+  }
+}
