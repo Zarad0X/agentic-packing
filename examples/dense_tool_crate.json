@@ -3,10 +3,10 @@
   ["tool_crate_0", "PLACE-ON-BASE", "root", {"x": 0.0, "y": 0.0}],
   ["tool_crate_0", "FACING-FRONT", "root", {}],
 
-  [[["can", 6]], "PLACE-IN", "tool_crate_0", {"strategy": "stacked", "columns": 3, "center_y_fraction": -0.30, "allow_protrusion_m": 0.08}],
-  [[["motor", 2]], "PLACE-IN", "tool_crate_0", {"strategy": "spread", "allow_protrusion_m": 0.10}],
-  [[["drill", 3]], "PLACE-IN", "tool_crate_0", {"strategy": "spread", "allow_protrusion_m": 0.14}],
-  [[["saw", 2]], "PLACE-IN", "tool_crate_0", {"strategy": "spread", "allow_protrusion_m": 0.12}],
-  [[["hammer", 4]], "PLACE-IN", "tool_crate_0", {"strategy": "dense", "allow_protrusion_m": 0.12}],
-  [[["wrench", 6]], "PLACE-IN", "tool_crate_0", {"strategy": "dense", "allow_protrusion_m": 0.12}]
+  [
+    [["motor", 2], ["drill", 3], ["saw", 2], ["hammer", 4], ["wrench", 6], ["can", 6]],
+    "PLACE-IN",
+    "tool_crate_0",
+    {"strategy": "organized", "allow_protrusion_m": 0.14}
+  ]
 ]

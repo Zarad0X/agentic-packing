@@ -54,6 +54,18 @@ def make_test_config() -> ReproductionConfig:
                     "maximum_mean_settle_distance_m": 0.01,
                     "minimum_packing_fraction": 0.30,
                     "minimum_packing_layers": 2,
+                },
+                "organized_container": {
+                    "minimum_success_rate": 1.0,
+                    "minimum_objects": 24,
+                    "fraction_runs_meeting_object_count": 1.0,
+                    "maximum_mean_settle_distance_m": 0.01,
+                    "minimum_floor_coverage": 0.78,
+                    "minimum_floor_compactness": 0.78,
+                    "minimum_bottom_layer_item_fraction": 0.45,
+                    "maximum_load_bearing_violation_count": 0,
+                    "maximum_semantic_support_violation_count": 0,
+                    "minimum_organization_score": 0.75,
                 }
             },
         }

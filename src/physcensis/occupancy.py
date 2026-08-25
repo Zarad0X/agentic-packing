@@ -133,6 +133,7 @@ def container_candidates(
     *,
     allow_protrusion_m: float = 0.0,
     yaw_offsets_rad: tuple[float, ...] = (0.0, np.pi / 2.0),
+    floor_only: bool = False,
 ) -> list[ContainerPlacementCandidate]:
     """Enumerate supported poses on the floor and on existing packed objects.
 
@@ -161,6 +162,8 @@ def container_candidates(
         if existing.support_id == container.object_id and existing.top_z <= ceiling_z + 1.0e-6
     )
     levels = sorted({round(value, 6) for value in support_levels})
+    if floor_only:
+        levels = levels[:1]
 
     container_cosine = float(np.cos(container.yaw_rad))
     container_sine = float(np.sin(container.yaw_rad))

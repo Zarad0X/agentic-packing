@@ -18,6 +18,7 @@ from physcensis.occupancy import (
 )
 from physcensis.physics import PhysicsBackend
 from physcensis.stability import StabilityEstimator
+from physcensis.storage_semantics import semantically_compatible_support, storage_profile
 from physcensis.types import (
     Issue,
     PlacementProgram,
@@ -241,31 +242,51 @@ class PhysicalSolver:
                 return []
             objects = [self._with_nesting_collision(obj) for obj in objects]
 
-        accepted_ids: list[str] = []
-        for obj in objects:
-            placement = self._find_container_position(
+        if strategy == "organized":
+            accepted_ids = self._place_organized_objects(
                 scene,
-                obj,
+                objects,
                 container,
                 predicate.params,
-                accepted_ids,
             )
-            if placement is None:
+            if len(accepted_ids) != len(objects):
+                rejected_ids = list(scene.metadata.pop("organized_failure_ids", []))
+                rejected = rejected_ids[0] if rejected_ids else objects[0].object_id
                 issues.append(
                     Issue(
-                        "place_in_no_solution",
-                        f"No collision-free position in {container.object_id} for {obj.object_id}",
-                        object_id=obj.object_id,
+                        "place_in_no_organized_solution",
+                        f"No household-like position in {container.object_id} for {rejected}",
+                        object_id=rejected,
                         predicate_index=predicate.source_index,
+                        details={"unplaced_object_ids": rejected_ids},
                     )
                 )
                 return []
-            obj.position_m = placement.position_m
-            obj.yaw_rad = placement.yaw_rad
-            obj.support_id = container.object_id
-            scene.objects[obj.object_id] = obj
-            pending.pop(obj.object_id, None)
-            accepted_ids.append(obj.object_id)
+            for object_id in accepted_ids:
+                pending.pop(object_id, None)
+        else:
+            accepted_ids = []
+            for obj in objects:
+                placement = self._find_container_position(
+                    scene,
+                    obj,
+                    container,
+                    predicate.params,
+                    accepted_ids,
+                )
+                if placement is None:
+                    issues.append(
+                        Issue(
+                            "place_in_no_solution",
+                            f"No collision-free position in {container.object_id} for {obj.object_id}",
+                            object_id=obj.object_id,
+                            predicate_index=predicate.source_index,
+                        )
+                    )
+                    return []
+                self._accept_container_placement(scene, obj, container, placement)
+                pending.pop(obj.object_id, None)
+                accepted_ids.append(obj.object_id)
         if strategy == "nested":
             self._record_semantic_stacks(
                 scene,
@@ -286,6 +307,7 @@ class PhysicalSolver:
         if invalid_ids or result.penetrations:
             for object_id in accepted_ids:
                 scene.objects.pop(object_id, None)
+                self._forget_container_support(scene, object_id)
             issues.append(
                 Issue(
                     "place_in_physics_failed",
@@ -296,6 +318,263 @@ class PhysicalSolver:
             return []
         return accepted_ids
 
+    def _place_organized_objects(
+        self,
+        scene: SceneState,
+        objects: list[SceneObject],
+        container: SceneObject,
+        params: Mapping[str, object],
+    ) -> list[str]:
+        """Fill the floor globally before allowing load-aware upper layers."""
+        remaining = sorted(objects, key=self._organized_object_priority)
+        accepted_ids: list[str] = []
+        bottom_ids: list[str] = []
+
+        while remaining:
+            selected: tuple[SceneObject, ContainerPlacementCandidate] | None = None
+            for obj in remaining:
+                candidates = container_candidates(
+                    scene,
+                    obj,
+                    container,
+                    self.config.physical.scene_resolution_m,
+                    allow_protrusion_m=float(params.get("allow_protrusion_m", 0.0)),
+                    yaw_offsets_rad=self._container_yaw_offsets(obj),
+                    floor_only=True,
+                )
+                if candidates:
+                    placement = min(
+                        candidates,
+                        key=lambda candidate: self._organized_floor_score(
+                            scene, obj, container, candidate
+                        ),
+                    )
+                    selected = (obj, placement)
+                    break
+            if selected is None:
+                break
+            obj, placement = selected
+            self._accept_container_placement(scene, obj, container, placement)
+            remaining.remove(obj)
+            accepted_ids.append(obj.object_id)
+            bottom_ids.append(obj.object_id)
+
+        while remaining:
+            selected = None
+            for obj in remaining:
+                candidates = container_candidates(
+                    scene,
+                    obj,
+                    container,
+                    self.config.physical.scene_resolution_m,
+                    allow_protrusion_m=float(params.get("allow_protrusion_m", 0.0)),
+                    yaw_offsets_rad=self._container_yaw_offsets(obj),
+                )
+                candidates = [
+                    candidate
+                    for candidate in candidates
+                    if candidate.layer_index > 0
+                    and self._reasonable_container_support(scene, obj, candidate)
+                ]
+                if candidates:
+                    placement = min(
+                        candidates,
+                        key=lambda candidate: self._organized_upper_score(
+                            scene, obj, candidate
+                        ),
+                    )
+                    selected = (obj, placement)
+                    break
+            if selected is None:
+                scene.metadata["organized_failure_ids"] = [
+                    obj.object_id for obj in remaining
+                ]
+                for object_id in accepted_ids:
+                    scene.objects.pop(object_id, None)
+                    self._forget_container_support(scene, object_id)
+                return []
+            obj, placement = selected
+            self._accept_container_placement(scene, obj, container, placement)
+            remaining.remove(obj)
+            accepted_ids.append(obj.object_id)
+
+        scene.metadata.setdefault("storage_plans", []).append(
+            {
+                "container_id": container.object_id,
+                "mode": "organized",
+                "placement_order": accepted_ids,
+                "bottom_layer_ids": bottom_ids,
+                "upper_layer_ids": [
+                    object_id for object_id in accepted_ids if object_id not in bottom_ids
+                ],
+            }
+        )
+        return accepted_ids
+
+    @staticmethod
+    def _organized_object_priority(obj: SceneObject) -> tuple[float, float, float, str]:
+        size = obj.asset.physical_size_m
+        footprint = size[0] * size[1]
+        load_value = obj.asset.mass_kg * (0.5 + obj.asset.supporting_probability)
+        return (-footprint, -load_value, -max(size[0], size[1]), obj.object_id)
+
+    @staticmethod
+    def _container_yaw_offsets(obj: SceneObject) -> tuple[float, ...]:
+        if obj.asset.visual_shape in {"bottle", "bowl", "can", "cup", "jar", "plate"}:
+            return (0.0,)
+        return (0.0, math.pi / 2.0)
+
+    @staticmethod
+    def _accept_container_placement(
+        scene: SceneState,
+        obj: SceneObject,
+        container: SceneObject,
+        placement: ContainerPlacementCandidate,
+    ) -> None:
+        obj.position_m = placement.position_m
+        obj.yaw_rad = placement.yaw_rad
+        obj.support_id = container.object_id
+        scene.objects[obj.object_id] = obj
+        supports = scene.metadata.setdefault("container_supports", {})
+        supports[obj.object_id] = list(placement.support_ids)
+
+    @staticmethod
+    def _forget_container_support(scene: SceneState, object_id: str) -> None:
+        supports = scene.metadata.get("container_supports", {})
+        if isinstance(supports, dict):
+            supports.pop(object_id, None)
+
+    def _organized_floor_score(
+        self,
+        scene: SceneState,
+        obj: SceneObject,
+        container: SceneObject,
+        candidate: ContainerPlacementCandidate,
+    ) -> tuple[float, float, float, float, float]:
+        placed = replace(obj, position_m=candidate.position_m, yaw_rad=candidate.yaw_rad)
+        supports = scene.metadata.get("container_supports", {})
+        floor_objects = [
+            existing
+            for existing in scene.objects.values()
+            if isinstance(supports, dict)
+            and supports.get(existing.object_id) == [container.object_id]
+        ]
+        bounds = [self._container_local_bounds(existing, container) for existing in floor_objects]
+        candidate_bounds = self._container_local_bounds(placed, container)
+        all_bounds = bounds + [candidate_bounds]
+        min_x = min(bound[0] for bound in all_bounds)
+        max_x = max(bound[1] for bound in all_bounds)
+        min_y = min(bound[2] for bound in all_bounds)
+        max_y = max(bound[3] for bound in all_bounds)
+        used_area = sum((bound[1] - bound[0]) * (bound[3] - bound[2]) for bound in all_bounds)
+        compactness = used_area / max((max_x - min_x) * (max_y - min_y), 1.0e-9)
+
+        inner = container.asset.container_inner_size_m
+        assert inner is not None
+        wall_gap = min(
+            candidate_bounds[0] + inner[0] / 2.0,
+            inner[0] / 2.0 - candidate_bounds[1],
+            candidate_bounds[2] + inner[1] / 2.0,
+            inner[1] / 2.0 - candidate_bounds[3],
+        )
+        neighbor_gap = min(
+            (self._rectangle_gap(candidate_bounds, existing) for existing in bounds),
+            default=float("inf"),
+        )
+        contact_gap = min(wall_gap, neighbor_gap)
+        return (
+            round(1.0 - compactness, 8),
+            round(contact_gap, 8),
+            -round(candidate.local_xy_m[1], 8),
+            round(abs(candidate.local_xy_m[0]), 8),
+            round(candidate.yaw_rad, 8),
+        )
+
+    @staticmethod
+    def _container_local_bounds(
+        obj: SceneObject, container: SceneObject
+    ) -> tuple[float, float, float, float]:
+        dx = obj.position_m[0] - container.position_m[0]
+        dy = obj.position_m[1] - container.position_m[1]
+        cosine = math.cos(container.yaw_rad)
+        sine = math.sin(container.yaw_rad)
+        local_x = cosine * dx + sine * dy
+        local_y = -sine * dx + cosine * dy
+        relative_yaw = obj.yaw_rad - container.yaw_rad
+        yaw_cosine = abs(math.cos(relative_yaw))
+        yaw_sine = abs(math.sin(relative_yaw))
+        size = obj.asset.physical_size_m
+        extent_x = yaw_cosine * size[0] + yaw_sine * size[1]
+        extent_y = yaw_sine * size[0] + yaw_cosine * size[1]
+        return (
+            local_x - extent_x / 2.0,
+            local_x + extent_x / 2.0,
+            local_y - extent_y / 2.0,
+            local_y + extent_y / 2.0,
+        )
+
+    @staticmethod
+    def _rectangle_gap(
+        first: tuple[float, float, float, float],
+        second: tuple[float, float, float, float],
+    ) -> float:
+        gap_x = max(second[0] - first[1], first[0] - second[1], 0.0)
+        gap_y = max(second[2] - first[3], first[2] - second[3], 0.0)
+        return math.hypot(gap_x, gap_y)
+
+    @staticmethod
+    def _reasonable_container_support(
+        scene: SceneState,
+        obj: SceneObject,
+        candidate: ContainerPlacementCandidate,
+    ) -> bool:
+        supporters = [
+            scene.get(object_id)
+            for object_id in candidate.support_ids
+            if object_id in scene.objects
+        ]
+        strong = [
+            supporter
+            for supporter in supporters
+            if supporter.asset.supporting_probability >= 0.10
+        ]
+        if not strong:
+            return False
+        if not semantically_compatible_support(obj, supporters):
+            return False
+        capacity = sum(supporter.asset.mass_kg * 2.0 for supporter in strong)
+        return obj.asset.mass_kg <= capacity + 1.0e-9
+
+    def _organized_upper_score(
+        self,
+        scene: SceneState,
+        obj: SceneObject,
+        candidate: ContainerPlacementCandidate,
+    ) -> tuple[float, float, float, float]:
+        supporters = [
+            scene.get(object_id)
+            for object_id in candidate.support_ids
+            if object_id in scene.objects
+        ]
+        same_kind = sum(
+            storage_profile(supporter.asset).group == storage_profile(obj.asset).group
+            for supporter in supporters
+        )
+        if supporters:
+            center_x = sum(supporter.position_m[0] for supporter in supporters) / len(supporters)
+            center_y = sum(supporter.position_m[1] for supporter in supporters) / len(supporters)
+            alignment = (candidate.position_m[0] - center_x) ** 2 + (
+                candidate.position_m[1] - center_y
+            ) ** 2
+        else:
+            alignment = float("inf")
+        return (
+            -float(same_kind),
+            round(candidate.position_m[2], 8),
+            -round(candidate.support_ratio, 8),
+            round(alignment, 8),
+        )
+
     def _find_container_position(
         self,
         scene: SceneState,
@@ -304,12 +583,7 @@ class PhysicalSolver:
         params: Mapping[str, object],
         accepted_ids: list[str],
     ) -> ContainerPlacementCandidate | None:
-        shape = obj.asset.visual_shape
-        yaw_offsets = (
-            (0.0,)
-            if shape in {"bottle", "bowl", "can", "cup", "jar", "plate"}
-            else (0.0, math.pi / 2.0)
-        )
+        yaw_offsets = self._container_yaw_offsets(obj)
         candidates = container_candidates(
             scene,
             obj,
@@ -507,8 +781,7 @@ class PhysicalSolver:
             }
         )
 
-    @staticmethod
-    def _container_metrics(scene: SceneState) -> dict[str, float]:
+    def _container_metrics(self, scene: SceneState) -> dict[str, float]:
         containers = [
             obj for obj in scene.objects.values() if obj.asset.container_inner_size_m is not None
         ]
@@ -527,6 +800,91 @@ class PhysicalSolver:
             for obj in packed_items
         )
         layer_count = len({round(obj.bottom_z, 2) for obj in packed_items})
+        support_map = scene.metadata.get("container_supports", {})
+        bottom_items: list[SceneObject] = []
+        floor_area = 0.0
+        occupied_floor_area = 0.0
+        compactness_weighted = 0.0
+        load_violations = 0
+        semantic_support_violations = 0
+        supported_item_count = 0
+        for container in containers:
+            inner = container.asset.container_inner_size_m
+            assert inner is not None
+            container_items = [
+                obj for obj in packed_items if obj.support_id == container.object_id
+            ]
+            wall = max(0.005, (container.asset.size_m[2] - inner[2]) / 2.0)
+            floor_z = container.bottom_z + wall
+            local_bottom: list[SceneObject] = []
+            for obj in container_items:
+                recorded = (
+                    support_map.get(obj.object_id)
+                    if isinstance(support_map, dict)
+                    else None
+                )
+                on_floor = recorded == [container.object_id] or (
+                    recorded is None
+                    and abs(obj.bottom_z - floor_z)
+                    <= max(0.018, self.config.physical.scene_resolution_m * 1.8)
+                )
+                if on_floor:
+                    local_bottom.append(obj)
+                    continue
+                if not isinstance(recorded, list):
+                    continue
+                supporters = [
+                    scene.get(object_id)
+                    for object_id in recorded
+                    if object_id in scene.objects and object_id != container.object_id
+                ]
+                if not supporters:
+                    continue
+                supported_item_count += 1
+                strong_capacity = sum(
+                    supporter.asset.mass_kg * 2.0
+                    for supporter in supporters
+                    if supporter.asset.supporting_probability >= 0.10
+                )
+                if obj.asset.mass_kg > strong_capacity + 1.0e-9:
+                    load_violations += 1
+                if not semantically_compatible_support(obj, supporters):
+                    semantic_support_violations += 1
+
+            bottom_items.extend(local_bottom)
+            container_floor_area = inner[0] * inner[1]
+            local_occupied = sum(
+                obj.asset.physical_size_m[0] * obj.asset.physical_size_m[1]
+                for obj in local_bottom
+            )
+            floor_area += container_floor_area
+            occupied_floor_area += min(container_floor_area, local_occupied)
+            if local_bottom:
+                bounds = [
+                    self._container_local_bounds(obj, container) for obj in local_bottom
+                ]
+                bbox_area = (
+                    max(bound[1] for bound in bounds) - min(bound[0] for bound in bounds)
+                ) * (
+                    max(bound[3] for bound in bounds) - min(bound[2] for bound in bounds)
+                )
+                local_compactness = min(1.0, local_occupied / max(bbox_area, 1.0e-9))
+                compactness_weighted += local_compactness * container_floor_area
+
+        floor_coverage = occupied_floor_area / max(floor_area, 1.0e-9)
+        bottom_fraction = len(bottom_items) / max(len(packed_items), 1)
+        floor_compactness = compactness_weighted / max(floor_area, 1.0e-9)
+        load_order_score = 1.0 - load_violations / max(supported_item_count, 1)
+        semantic_support_score = (
+            1.0 - semantic_support_violations / max(supported_item_count, 1)
+        )
+        organization_score = (
+            0.45 * floor_coverage
+            + 0.15 * floor_compactness
+            + 0.15 * bottom_fraction
+            + 0.10 * load_order_score
+            + 0.15 * semantic_support_score
+        )
         stacks = scene.metadata.get("semantic_stacks", [])
         stacked_ids = {
             object_id
@@ -537,6 +895,13 @@ class PhysicalSolver:
             "container_item_count": float(len(packed_items)),
             "packing_fraction": packed_volume / max(inner_volume, 1.0e-9),
             "packing_layer_count": float(layer_count),
+            "floor_coverage": floor_coverage,
+            "floor_void_fraction": 1.0 - floor_coverage,
+            "floor_compactness": floor_compactness,
+            "bottom_layer_item_fraction": bottom_fraction,
+            "load_bearing_violation_count": float(load_violations),
+            "semantic_support_violation_count": float(semantic_support_violations),
+            "organization_score": organization_score,
             "semantic_stack_count": float(len(stacks)),
             "nested_object_count": float(len(stacked_ids)),
             "same_asset_stack_fraction": (

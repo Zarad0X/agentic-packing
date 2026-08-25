@@ -43,6 +43,12 @@ async function generate() {
     document.querySelector('#packing').textContent = data.packing_fraction
       ? `${number(data.packing_fraction * 100, 1)}%`
       : '—';
+    document.querySelector('#floor-use').textContent = data.metrics.floor_coverage
+      ? `${number(data.metrics.floor_coverage * 100, 1)}%`
+      : '—';
+    document.querySelector('#organization').textContent = data.metrics.organization_score
+      ? `${number(data.metrics.organization_score * 100, 1)}%`
+      : '—';
     summary.textContent = data.summary;
     state.textContent = isPhysicalBackend ? 'PHYSICALLY STABLE' : 'GEOMETRY VALID';
     const records = (data.program || []).filter(record => Array.isArray(record) && record.length === 4);

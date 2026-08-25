@@ -35,6 +35,12 @@ class ContainerOccupancyTest(unittest.TestCase):
             all(candidate.support_ratio >= 0.55 for candidate in candidates)
         )
 
+        floor_candidates = container_candidates(
+            scene, upper, basket, 0.02, floor_only=True
+        )
+        self.assertTrue(floor_candidates)
+        self.assertTrue(all(candidate.layer_index == 0 for candidate in floor_candidates))
+
 
 if __name__ == "__main__":
     unittest.main()

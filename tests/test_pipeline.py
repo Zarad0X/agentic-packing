@@ -62,6 +62,27 @@ class PipelineTest(unittest.TestCase):
                 result.feedback.measurements["packing_layer_count"], 2
             )
             self.assertEqual(result.scene.metadata["presentation_mode"], "dense_container")
+            if filename in {"dense_tool_crate.json", "dense_office_tote.json"}:
+                self.assertGreaterEqual(
+                    result.feedback.measurements["floor_coverage"], 0.78
+                )
+                self.assertGreaterEqual(
+                    result.feedback.measurements["floor_compactness"], 0.78
+                )
+                self.assertEqual(
+                    result.feedback.measurements["load_bearing_violation_count"], 0.0
+                )
+                self.assertEqual(
+                    result.feedback.measurements["semantic_support_violation_count"], 0.0
+                )
+                self.assertGreaterEqual(
+                    result.feedback.measurements["organization_score"], 0.75
+                )
+                plan = result.scene.metadata["storage_plans"][0]
+                bottom_count = len(plan["bottom_layer_ids"])
+                self.assertEqual(
+                    plan["placement_order"][:bottom_count], plan["bottom_layer_ids"]
+                )
             if filename == "dense_kitchen_sink.json":
                 self.assertGreaterEqual(
                     result.feedback.measurements["semantic_stack_count"], 4

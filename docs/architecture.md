@@ -86,6 +86,24 @@ non-overlap, and a minimum support-area ratio before the physical solver can
 accept it. This produces genuine multi-layer packing while keeping the
 persistent scene representation compact and serializable.
 
+The `organized` strategy adds a household-storage planner above that geometric
+search. It first orders the complete mixed batch by footprint and load-bearing
+value, but repeatedly scans all remaining objects so smaller pieces can refill
+floor holes before any upper layer is opened. Floor candidates minimize a
+compactness/contact-gap score. Only after no remaining object fits the floor may
+the planner use an upper surface, where it enforces both mass capacity and a
+semantic compatibility profile. Paper goods may form paper stacks and workshop
+tools may share rigid workshop supports; fragile electronics cannot become
+generic shelves. Small loose items remain eligible to backfill safe gaps.
+
+Every accepted container contact is retained in
+`scene.metadata.container_supports`, and each global placement order is retained
+in `scene.metadata.storage_plans`. Evaluation therefore measures floor coverage,
+floor compactness, bottom-layer fraction, load-bearing violations, semantic
+support violations, and a composite organization score. These measurements are
+independent of visual meshes and are checked before the final assembled-scene
+Genesis simulation.
+
 ## Program call flow
 
 ```mermaid

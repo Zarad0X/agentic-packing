@@ -77,7 +77,7 @@ The stable-demo completion gate has been met on the checked-in implementation:
 
 | Evidence | Result | Interpretation |
 | --- | ---: | --- |
-| Unit/integration tests | 23 passed | Parser, geometry, agent routing, core and complex dense families, pipeline, evaluation, and licensed-asset quality/integrity |
+| Unit/integration tests | 26 passed | Parser, geometry, agent routing, core and complex dense families, storage semantics, pipeline, evaluation, and licensed-asset quality/integrity |
 | Ruff | passed | Source and tests |
 | Core gate | 100/100, five families | `geometry_only`; 20 runs per family, at least 15 objects each |
 | Dining scene | 16 objects, 0 spatial penalty, 0.032 mm settle | Real Genesis, 400 steps |
@@ -86,8 +86,8 @@ The stable-demo completion gate has been met on the checked-in implementation:
 | Grocery basket | 23 total / 22 packed, 3 layers, 47.9% fill, 0.224 mm settle | Real Genesis, 400 steps |
 | Kitchen sink | 24 total / 23 packed, 5 post-simulation layers, 31.3% fill, 4.186 mm settle | Real Genesis, 400 steps |
 | Dishwashing station | 31 total / 30 packed, 10 layers, 46.2% fill, 4 stacks / 18 nested, 0.472 mm settle | Real Genesis, 400 steps; licensed opaque dishware overlays |
-| Tool crate | 24 total / 23 packed, 8 layers, 54.0% fill, 2.584 mm settle | Real Genesis, 400 steps; mixed long, heavy, and cylindrical objects |
-| Office tote | 28 total / 27 packed, 7 layers, 88.4% surface coverage, 8.953 mm settle | Real Genesis, 400 steps; stacked thin objects plus small fillers |
+| Tool crate | 24 total / 23 packed, 80.7% floor coverage, 81.2% organization, 0.673 mm settle | Real Genesis, 400 steps; floor-first fill, grouped tools, zero load/semantic support violations |
+| Office tote | 28 total / 27 packed, 89.8% floor coverage, 87.1% organization, 0.978 mm settle | Real Genesis, 400 steps; grouped paper/electronics/small fillers, zero load/semantic support violations |
 | Interactive demo | prompt-to-preview/export verified | Progress states, measurements, predicates, and downloadable scene JSON |
 | Licensed asset pack v3 | 24/24 files validated | CC BY 4.0, SHA-256, Objaverse++ score 3, opaque and embedded-texture only, proxy-fit audit plus dense Genesis QA |
 
@@ -107,6 +107,15 @@ support area and collision before accepting each pose, and validates the final
 assembled scene in Genesis. Procedural container rims, basket slats, dish rims,
 handles, lids, and package labels improve category readability without claiming
 the photoreal texture fidelity of the private asset collection.
+
+For mixed household storage, the `organized` mode globally fills the bottom
+layer before stacking. It scans deferred objects to backfill small holes and
+admits an upper placement only when its recorded supporters pass both a mass
+capacity rule and a semantic compatibility profile. The frozen organization
+gate rejects bottom-layer coverage or compactness below 78%, any overloaded or
+semantically incompatible support, and organization scores below 75%. This
+explicitly distinguishes physically possible packing from ordinary storage
+behavior.
 
 The optional `objaverse_cc_by_v3` manifest overlays licensed GLB visuals on the
 same procedural proxy records. Mesh centering, up-axis conversion, and scale are

@@ -25,7 +25,8 @@ The stable demonstration target is implemented. It includes the complete
 predicate language described in the paper, planar optimization, occupancy-based
 physical placement, Genesis validation, feedback-driven prompt generation,
 procedural rendering, a five-family benchmark, a dedicated dense-container
-gate, a browser demo, and a frozen 24-model Objaverse CC BY visual-asset pack.
+gate, a semantic organization gate, a browser demo, and a frozen 24-model
+Objaverse CC BY visual-asset pack.
 The dense examples contain up to 31 total objects and use multi-layer support
 search, explicit same-asset nesting, and distinct open-container geometries
 rather than a single planar packing pass.
@@ -122,9 +123,28 @@ simulated rigid-stack proxies settle by 0.465 mm.
 
 Three additional complex demos exercise different packing regimes: a
 31-object dishwashing station with four semantic stacks and 18 nested members,
-a 24-object mixed tool crate, and a 28-object office tote with stacked books,
-thin devices, and small stationery. Their authoritative Genesis runs settle by
-0.472 mm, 2.584 mm, and 8.953 mm respectively, all below the frozen 10 mm gate.
+a 24-object mixed tool crate, and a 28-object office tote. The two storage demos
+use one global `organized` batch: they exhaust useful floor placements, refill
+holes with smaller objects, and only then open load- and semantic-compatible
+upper layers. This prevents flat electronics from being treated as generic
+shelves and keeps ordinary paper/tool stacks together.
+
+Reproduce the organization gate separately:
+
+```bash
+physcensis benchmark \
+  --suite organized \
+  --backend quasistatic \
+  --repetitions 3 \
+  --report output/evaluation/organized_quasistatic_6.json
+```
+
+The gate requires at least 78% floor coverage and compactness, zero overloaded
+supports, zero semantically incompatible supports, and a 75% organization
+score in addition to the existing count, success-rate, and settle contracts.
+On the frozen examples, the tool crate reaches 80.7% floor coverage and an
+81.2% organization score; the office tote reaches 89.8% and 87.1%. Their final
+400-step Genesis validations settle by 0.673 mm and 0.978 mm respectively.
 
 Large assets are intentionally not stored in Git. Asset acquisition produces a
 manifest containing source IDs, licenses, hashes, annotations, and derived mesh

@@ -15,7 +15,7 @@ from physcensis.asset_library import (
     ManifestAssetCatalog,
 )
 from physcensis.config import ConfigError, ReproductionConfig
-from physcensis.evaluation import run_core_gate, run_dense_gate
+from physcensis.evaluation import run_core_gate, run_dense_gate, run_organized_gate
 from physcensis.physics import GenesisBackend, QuasiStaticBackend
 from physcensis.pipeline import ScenePipeline
 
@@ -110,7 +110,11 @@ def _demo(args: argparse.Namespace) -> int:
 def _benchmark(args: argparse.Namespace) -> int:
     config = _config(args)
     backend = _backend(args.backend, config)
-    gate_runner = run_dense_gate if args.suite == "dense" else run_core_gate
+    gate_runner = {
+        "core": run_core_gate,
+        "dense": run_dense_gate,
+        "organized": run_organized_gate,
+    }[args.suite]
     report = gate_runner(
         config,
         backend,
@@ -217,7 +221,9 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark = subparsers.add_parser("benchmark", help="run the frozen core acceptance gate")
     benchmark.add_argument("--config", default="configs/paper.yaml")
     benchmark.add_argument("--backend", choices=("quasistatic", "genesis"), default="quasistatic")
-    benchmark.add_argument("--suite", choices=("core", "dense"), default="core")
+    benchmark.add_argument(
+        "--suite", choices=("core", "dense", "organized"), default="core"
+    )
     benchmark.add_argument("--repetitions", type=int, default=20)
     benchmark.add_argument("--examples", default="examples")
     benchmark.add_argument("--report")
