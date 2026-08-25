@@ -133,7 +133,7 @@ settle distance while removing the v1 transparent/empty-looking dishware.
 
 ## Fixed-inventory agent extension
 
-The `physcensis arrange` fixed-inventory interface is a practical extension,
+The `agentic-packing arrange` fixed-inventory interface is a practical extension,
 not a claim about the paper's exact agent interface. It runs a complete
 provider-neutral planning loop over already supplied objects: Codex is the
 default agent for the user's workflow, while `OpenAIInventoryAgent(o4-mini)` is

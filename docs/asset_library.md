@@ -29,7 +29,7 @@ quality score, transparency flag, and QA statuses per object.
 ## Install and validate
 
 ```bash
-physcensis assets --action fetch \
+agentic-packing assets --action fetch \
   --manifest assets/manifests/objaverse_cc_by_v3.json \
   --cache assets/cache/objaverse_cc_by_v3/original
 ```
@@ -38,7 +38,7 @@ physcensis assets --action fetch \
 the file. `validate` performs the same integrity check without network access:
 
 ```bash
-physcensis assets --action validate \
+agentic-packing assets --action validate \
   --manifest assets/manifests/objaverse_cc_by_v3.json \
   --cache assets/cache/objaverse_cc_by_v3/original
 ```

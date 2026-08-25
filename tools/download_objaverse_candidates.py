@@ -42,7 +42,7 @@ def _download(candidate: dict[str, Any], output_dir: Path, retries: int = 3) -> 
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         request = urllib.request.Request(
             candidate["download_url"],
-            headers={"User-Agent": "physcensis-reproduction-asset-curator/0.1"},
+            headers={"User-Agent": "agentic-packing-asset-curator/0.1"},
         )
         for attempt in range(1, retries + 1):
             try:

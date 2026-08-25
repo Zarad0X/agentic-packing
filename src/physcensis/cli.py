@@ -240,7 +240,13 @@ def _add_asset_catalog_args(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="physcensis")
+    parser = argparse.ArgumentParser(
+        prog="agentic-packing",
+        description=(
+            "LLM-guided dense object arrangement with deterministic geometry "
+            "and optional Genesis validation"
+        ),
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     generate = subparsers.add_parser("generate", help="run one predicate program")
@@ -299,7 +305,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_asset_catalog_args(prompt)
     prompt.set_defaults(handler=_prompt)
 
-    demo = subparsers.add_parser("demo", help="serve the interactive reproduction demo")
+    demo = subparsers.add_parser("demo", help="serve the interactive arrangement demo")
     demo.add_argument("--config", default="configs/paper.yaml")
     demo.add_argument("--host", default="127.0.0.1")
     demo.add_argument("--port", type=int, default=8787)
@@ -312,7 +318,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_asset_catalog_args(demo)
     demo.set_defaults(handler=_demo)
 
-    benchmark = subparsers.add_parser("benchmark", help="run the frozen core acceptance gate")
+    benchmark = subparsers.add_parser("benchmark", help="run a frozen acceptance gate")
     benchmark.add_argument("--config", default="configs/paper.yaml")
     benchmark.add_argument("--backend", choices=("quasistatic", "genesis"), default="quasistatic")
     benchmark.add_argument(

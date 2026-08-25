@@ -1,323 +1,464 @@
-# PhyScensis clean-room reproduction
+# Agentic Packing
 
-[![CI](https://github.com/Zarad0X/physcensis-reproduction/actions/workflows/ci.yml/badge.svg)](https://github.com/Zarad0X/physcensis-reproduction/actions/workflows/ci.yml)
+[![CI](https://github.com/Zarad0X/agentic-packing/actions/workflows/ci.yml/badge.svg)](https://github.com/Zarad0X/agentic-packing/actions/workflows/ci.yml)
 [![Python 3.10–3.13](https://img.shields.io/badge/python-3.10--3.13-blue.svg)](https://www.python.org/)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 
-This repository reconstructs the core method from **PhyScensis: Physics-Augmented
-LLM Agents for Complex Physical Scene Arrangement** (Wang et al., ICLR 2026).
-The target is a stable, high-quality scene-generation demo rather than an exact
-copy of the authors' private asset library or robot experiments.
+**Agentic Packing** arranges a fixed collection of real-world objects into a
+container using an LLM planner, deterministic geometry and support reasoning,
+and an optional Genesis rigid-body validation pass. Give it a crate, sink,
+basket, tote, or tabletop plus roughly 20 object instances; it returns a complete,
+auditable arrangement rather than merely generating a plausible image.
 
-The implementation follows the paper's information flow:
+The system is designed for dense, everyday storage. It tries to use the bottom
+surface before opening upper layers, groups related objects, nests only models
+that are explicitly marked stackable, checks load-bearing and semantic support,
+and sends concrete failure feedback back to the agent when a proposed plan cannot
+be realized.
 
-1. an agent emits object descriptions and spatial/physical predicates;
-2. a parser validates the predicate program;
-3. a convex-polygon spatial solver places objects on the base surface;
-4. an occupancy/physics solver realizes `PLACE-IN`, `PLACE-ON`, and
-   `PLACE-ANYWHERE`;
-5. structured feedback drives another generation round;
-6. renderers and evaluation tools expose semantic and physical quality.
+This repository began as an independent clean-room reproduction of the scene
+arrangement core in **PhyScensis: Physics-Augmented LLM Agents for Complex
+Physical Scene Arrangement** (Wang et al., ICLR 2026). It has since evolved into
+a practical fixed-inventory packing pipeline. It is not the authors' official
+implementation and does not contain their private BlenderKit assets or robot
+experiments.
 
-## Status
+## What works today
 
-The stable demonstration target is implemented. It includes the complete
-predicate language described in the paper, planar optimization, occupancy-based
-physical placement, Genesis validation, feedback-driven prompt generation,
-procedural rendering, a five-family benchmark, a dedicated dense-container
-gate, a semantic organization gate, a browser demo, and a frozen 24-model
-Objaverse CC BY visual-asset pack. A separate fixed-inventory entry point accepts
-around 20 user-specified object instances and optimizes only their final arrangement.
-The dense examples contain up to 31 total objects and use multi-layer support
-search, explicit same-asset nesting, and distinct open-container geometries
-rather than a single planar packing pass.
+- **Fixed inventory:** every supplied object ID is immutable; the planner may not
+  omit, replace, duplicate, or invent objects.
+- **Agentic planning:** the default agent is the authenticated local Codex CLI.
+  An OpenAI Responses API adapter and a deterministic offline baseline implement
+  the same interface.
+- **Dense placement:** global floor-first search, hole backfilling, 90-degree
+  orientations, multiple support layers, and optional controlled protrusion.
+- **Household organization:** adjacency hints, repeated-object grouping, explicit
+  plate/bowl/cup nesting, support-load limits, and semantic compatibility rules.
+- **Closed-loop correction:** invalid schemas, unsafe stack requests, and
+  unplaced object IDs become structured feedback for the next planning round.
+- **Licensed real meshes:** a frozen 24-model Objaverse CC BY 4.0 asset pack with
+  hashes, attribution, opacity checks, embedded-texture checks, and dense-scene QA.
+- **Physical validation:** one final 400-step Genesis simulation of the assembled
+  scene, plus a fast deterministic backend for development and regression tests.
+- **Auditable outputs:** the resolved inventory, agent rounds, support graph,
+  arrangement metrics, simulator report, scene state, and render are serialized.
 
-The frozen method contract and evidence are recorded in
-[`docs/reproduction_spec.md`](docs/reproduction_spec.md); module boundaries and
-control flow are in [`docs/architecture.md`](docs/architecture.md).
+The latest end-to-end tool-crate demonstration packed all 20 supplied licensed
+models after one feedback-driven replanning round. On an RTX A6000 it achieved
+83.5% floor coverage, an 85.0% organization score, zero load or semantic support
+violations, zero visible support gaps, and 0.322 mm final settle displacement.
+These are results for that frozen example, not a general benchmark claim.
 
-This is an independent clean-room reproduction. It is not the official code
-release of the PhyScensis authors and does not redistribute their private asset
-library.
+## Pipeline
 
-## Quick start
+```mermaid
+flowchart LR
+    A[Fixed inventory JSON] --> B[Asset resolution]
+    B --> C[LLM planner]
+    C --> D[Plan schema and identity checks]
+    D --> E[Organized geometric packing]
+    E --> F[Support, load, and semantic checks]
+    F -->|failure feedback| C
+    F -->|complete arrangement| G[Final Genesis simulation]
+    G --> H[Scene, report, trace, and render]
+```
+
+The LLM makes high-level decisions: placement order, which repeated objects may
+form a stack, and which peers should stay adjacent. It does **not** directly set
+unverified final poses. Geometry, containment, collision proxies, stackability,
+support area, load limits, and simulator measurements remain code-controlled.
+This separation makes the result reproducible and prevents a persuasive agent
+response from bypassing physical constraints.
+
+The expensive simulator is intentionally called only after deterministic search
+has assembled a complete candidate scene. Rebuilding Genesis for every candidate
+would repeatedly compile kernels and make the feedback loop impractical.
+
+## Installation
+
+### 1. Core development environment
+
+The core solver and quasistatic backend run on macOS or Linux without a GPU.
 
 ```bash
+git clone https://github.com/Zarad0X/agentic-packing.git
+cd agentic-packing
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install -e '.[dev]'
-physcensis generate --program examples/dining_table.json --output output/scenes/dining_table
-python -m pytest -q
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev,render]'
+agentic-packing doctor --backend quasistatic
 ```
 
-Launch the interactive local demo:
+The legacy `physcensis` executable remains available as a compatibility alias.
+New documentation and scripts should use `agentic-packing`.
+
+### 2. Codex planning agent
+
+The default fixed-inventory agent uses the local Codex CLI and its existing
+authentication. No `OPENAI_API_KEY` is needed.
 
 ```bash
-physcensis demo --backend quasistatic
-# Open http://127.0.0.1:8787
+codex --version
+agentic-packing arrange --help
 ```
 
-The deterministic backend is intended for parser, geometry, prompt, and demo
-regression. It labels its results `GEOMETRY VALID`; it does not claim physical
-simulation. Paper-like physical validation requires Genesis and a CUDA-capable
-Linux host:
+Unless `--model` is passed, the inner agent uses the default model in the current
+Codex configuration. The trace records the provider and resolved model metadata.
+If the outer process is sandboxed, it must still allow Codex to update its normal
+session state under `~/.codex`.
+
+### 3. Genesis GPU backend
+
+Genesis validation requires a CUDA-capable Linux machine. The validated setup
+uses an RTX A6000; CPU-only machines should use `--backend quasistatic`.
 
 ```bash
-python -m pip install -e '.[dev,genesis,render]'
-physcensis doctor --backend genesis
-CUDA_VISIBLE_DEVICES=0 physcensis prompt \
-  --prompt "Create a warm dining table for four people" \
-  --output output/scenes/dining_genesis \
-  --backend genesis --stability-samples 0
+python -m pip install -e '.[dev,render,genesis]'
+CUDA_VISIBLE_DEVICES=0 agentic-packing doctor --backend genesis
 ```
 
-`--stability-samples 0` keeps the interactive path fast while still running one
-400-step final-scene Genesis validation. Set it to `64` to run the paper-sized
-11D perturbation estimate as well.
+### 4. Optional OpenAI API agent
 
-## Arrange a fixed inventory
-
-`arrange` is the end-to-end agent entry point for the practical setting where
-the object instances already exist. The input names one target container and
-lists every supplied object separately. The default `codex` agent uses the
-authenticated local Codex CLI to propose a strict semantic plan, then the
-geometry/physics solver realizes it and returns structured feedback for another
-round when necessary. Object IDs and count are immutable: neither the agent nor
-the solver may substitute, drop, or invent an item.
-
-Run the included 20-object example:
+This adapter is retained for paper-model comparisons and explicit API runs.
 
 ```bash
-physcensis arrange \
+python -m pip install -e '.[agent]'
+export OPENAI_API_KEY=...  # never commit credentials
+```
+
+## Five-minute local demo
+
+Run the 20-object dish inventory with the real Codex planner and fast deterministic
+validation:
+
+```bash
+agentic-packing arrange \
   --inventory examples/inventory_dish_sink.json \
   --output output/scenes/inventory_dish_sink_codex \
-  --backend quasistatic --stability-samples 0
+  --agent codex \
+  --backend quasistatic \
+  --stability-samples 0
 ```
 
-This path uses the current Codex login and configured default model; it does
-not require `OPENAI_API_KEY`. Pass `--model` to pin a Codex model explicitly.
-Each round is written to `llm_trace.json`, including the exact inventory facts,
-validated plan, provider metadata, solver feedback, and measurements. The
-included dish inventory demonstrates three model-planned stacks: four plates,
-four bowls, and four explicitly stackable cups. Ordinary handled cups remain
-unstacked because their asset metadata does not authorize nesting.
+The dish example contains four plates, four bowls, four explicitly stackable
+cups, two ordinary handled cups, jars, cans, and pantry boxes. Plates, bowls,
+and handleless stackable cups may be nested. Ordinary cups remain separate
+because their asset metadata does not authorize nesting.
 
-For the paper-model comparison, install the API extra and select the Responses
-API adapter explicitly:
+For a deterministic smoke test that does not call an LLM:
 
 ```bash
-python -m pip install -e '.[agent]'
-export OPENAI_API_KEY=...  # never store the key in this repository
-physcensis arrange \
+agentic-packing arrange \
   --inventory examples/inventory_dish_sink.json \
-  --output output/scenes/inventory_dish_sink_o4mini \
-  --agent openai --model o4-mini --backend quasistatic
-```
-
-`--agent deterministic` is an explicit offline fallback used by regression
-tests. It exercises the same plan validation and physical solver but is not an
-LLM run. When `arrange` itself is launched from an outer filesystem sandbox,
-the process must still permit the Codex CLI to update its normal `~/.codex`
-session state.
-
-The inventory schema is deliberately smaller than the predicate language:
-
-```json
-{
-  "container": {"object_id": "my_crate", "category": "tool crate"},
-  "objects": [
-    {"object_id": "my_drill", "category": "drill"},
-    {
-      "object_id": "my_wrench",
-      "category": "wrench",
-      "asset_uid": "3be07a34145f4bd0bbc2dd01f8fca136"
-    }
-  ],
-  "arrangement": {"allow_protrusion_m": 0.14}
-}
-```
-
-An `asset_uid` locks that object to one exact allowlisted model and therefore
-requires `--asset-manifest` and `--asset-cache`. Without it, the selected
-catalog resolves a deterministic category model. A user-owned model can be
-specified instead with an inline `asset` object containing at least `size_m`
-and optionally `mesh_path`, mass, friction, support probability, transforms,
-and provenance. Relative mesh paths resolve from the inventory file; the file
-hash is frozen into `scene.json`. Mesh coordinates are assumed to already use
-the declared scale, while `size_m` or `collision_size_m` remains the physical
-proxy authority.
-
-The agent returns an exact placement-order permutation, optional same-asset
-stack groups, and optional adjacency groups. Schema and domain validation reject
-missing or invented IDs, duplicate memberships, unsafe stack requests, and
-bottom-to-top ordering errors before geometry runs. The planner then exhausts
-feasible bottom placements globally before opening upper layers, while forcing
-approved stack members onto their requested predecessor and preferring adjacent
-peer groups. It still enforces semantic and load-compatible supports. If the
-complete set cannot fit, solver feedback reports `unplaced_object_ids` to the
-next agent round; no round can return a deceptively successful partial result.
-Use `--backend genesis` for the final assembled-scene physical validation and
-PNG render.
-
-## Free-scene natural-language agent
-
-The separate `prompt` command creates both assets and predicates from a free
-scene description. It works offline with a deterministic prompt-family agent;
-an optional OpenAI Responses API adapter emits the same strict predicate schema
-and participates in the same structured feedback loop:
-
-```bash
-python -m pip install -e '.[agent]'
-export OPENAI_API_KEY=...  # never store the key in this repository
-physcensis demo --backend genesis --agent openai --model o4-mini
-```
-
-## Reproduce the acceptance gate
-
-```bash
-physcensis benchmark \
+  --output output/scenes/inventory_dish_sink_offline \
+  --agent deterministic \
   --backend quasistatic \
-  --repetitions 20 \
-  --report output/evaluation/core_quasistatic_100.json
+  --stability-samples 0
 ```
 
-The frozen report contains 100/100 successful generations over dining table,
-office desk, workbench, coffee table, and physical-showcase families; every run
-contains at least 15 objects. This is explicitly stored as `geometry_only`.
-Separate real-physics outputs record a 400-step Genesis settle displacement of
-0.032 mm for the 16-object dining scene and 0.074 mm for the 15-object physical
-showcase.
+The deterministic agent exercises the same plan parser and physical solver, but
+its output must not be reported as an LLM result.
 
-Reproduce the separate dense-container gate:
+## End-to-end run with licensed meshes and Genesis
 
-```bash
-physcensis benchmark \
-  --suite dense \
-  --backend quasistatic \
-  --repetitions 10 \
-  --report output/evaluation/dense_quasistatic_20.json
-```
-
-The frozen dense report contains 20/20 successful generations. The grocery
-basket contains 22 packed objects across at least three support layers with a
-47.9% projected packing fraction; the kitchen sink contains 23 packed objects
-across at least four layers with a 31.3% packing fraction. Separate 400-step
-Genesis runs on an RTX A6000 settled by 0.224 mm and 4.186 mm respectively.
-The semantic-stack sink variant contains two same-model plate stacks, one bowl
-stack, and one handleless-cup stack (14 nested members total); its freely
-simulated rigid-stack proxies settle by 0.465 mm.
-
-Three additional complex demos exercise different packing regimes: a
-31-object dishwashing station with four semantic stacks and 18 nested members,
-a 24-object mixed tool crate, and a 28-object office tote. The two storage demos
-use one global `organized` batch: they exhaust useful floor placements, refill
-holes with smaller objects, and only then open load- and semantic-compatible
-upper layers. This prevents flat electronics from being treated as generic
-shelves and keeps ordinary paper/tool stacks together.
-
-Reproduce the organization gate separately:
+Large model files are not committed. Fetch and verify the frozen Objaverse pack
+on a networked machine:
 
 ```bash
-physcensis benchmark \
-  --suite organized \
-  --backend quasistatic \
-  --repetitions 3 \
-  --report output/evaluation/organized_quasistatic_6.json
-```
-
-The gate requires at least 78% floor coverage and compactness, zero overloaded
-supports, zero semantically incompatible supports, and a 75% organization
-score in addition to the existing count, success-rate, and settle contracts.
-On the frozen examples, the tool crate reaches 80.7% floor coverage and an
-81.2% organization score; the office tote reaches 89.8% and 87.1%. Their final
-400-step Genesis validations settle by 0.673 mm and 0.978 mm respectively.
-
-Large assets are intentionally not stored in Git. Asset acquisition produces a
-manifest containing source IDs, licenses, hashes, annotations, and derived mesh
-paths.
-
-## Licensed visual assets
-
-The frozen `objaverse_cc_by_v3` pack supplies 24 manually screened GLB models
-across 17 categories. In addition to the seven dishware/grocery assets from v2,
-it adds 17 textured books, notebooks, tools, a motor, keyboards, a phone, a
-mouse, pens, and pencils for the complex crate and office demos. The repository
-stores only the allowlisted manifest and attribution; downloaded model bytes
-stay in an ignored cache. Every file must be CC BY 4.0, match its frozen
-SHA-256, score 3 in Objaverse++, be opaque, use embedded base-color textures,
-and pass thumbnail, geometry, and real Genesis dense-scene QA.
-
-Install or validate the pack on a machine with network access:
-
-```bash
-physcensis assets --action fetch \
+agentic-packing assets \
+  --action fetch \
   --manifest assets/manifests/objaverse_cc_by_v3.json \
   --cache assets/cache/objaverse_cc_by_v3/original
 
-physcensis assets --action validate \
+agentic-packing assets \
+  --action validate \
   --manifest assets/manifests/objaverse_cc_by_v3.json \
   --cache assets/cache/objaverse_cc_by_v3/original
 ```
 
-Render the dense kitchen sink with the licensed meshes:
+Then run the real 20-object tool-crate example:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 physcensis generate \
-  --program examples/dense_kitchen_sink.json \
-  --output output/scenes/dense_kitchen_sink_semantic_stacks_v3 \
-  --backend genesis --stability-samples 0 \
+CUDA_VISIBLE_DEVICES=0 agentic-packing arrange \
+  --inventory examples/inventory_tool_crate.json \
+  --output output/scenes/inventory_tool_crate_codex_genesis \
+  --agent codex \
+  --backend genesis \
+  --stability-samples 0 \
   --asset-manifest assets/manifests/objaverse_cc_by_v3.json \
   --asset-cache assets/cache/objaverse_cc_by_v3/original
 ```
 
-Render the three complex dense demos with the same physical/visual boundary:
+`--stability-samples 0` disables the optional perturbation estimate but still
+runs the final assembled-scene 400-step Genesis simulation. Use `64` for the
+paper-sized 11D perturbation estimate.
 
-```bash
-for scene in dense_dishwashing_station dense_tool_crate dense_office_tote; do
-  CUDA_VISIBLE_DEVICES=0 physcensis generate \
-    --program "examples/${scene}.json" \
-    --output "output/scenes/${scene}_genesis" \
-    --backend genesis --stability-samples 0 \
-    --asset-manifest assets/manifests/objaverse_cc_by_v3.json \
-    --asset-cache assets/cache/objaverse_cc_by_v3/original
-done
+## Supplying your own 20 objects
+
+An inventory has exactly one container and a list of object instances:
+
+```json
+{
+  "container": {
+    "object_id": "my_crate",
+    "category": "tool crate",
+    "position_xy_m": [0.0, 0.0],
+    "yaw_deg": 0.0
+  },
+  "objects": [
+    {"object_id": "drill_01", "category": "drill"},
+    {
+      "object_id": "wrench_01",
+      "category": "wrench",
+      "asset_uid": "3be07a34145f4bd0bbc2dd01f8fca136"
+    }
+  ],
+  "arrangement": {
+    "allow_protrusion_m": 0.10
+  }
+}
 ```
 
-External meshes are presentation overlays only. The deterministic procedural
-proxy remains the collision and stability authority, so changing a visual model
-cannot silently change the accepted packing result. For presentation renders,
-the visible overlays are recursively aligned to the recorded support graph: a
-floor item keeps its proxy-aligned bottom, while each upper item meets the
-highest visible surface of its supporters. The organized gate's visual-gap,
-violation, and unresolved-support checks make this alignment observable without
-changing collision geometry. A `nested` request is
-accepted only for manifest entries marked `stackable`; each accepted column is
-recorded in `scene.metadata.semantic_stacks` and simulated as one freely moving
-rigid-stack proxy. See
-[`docs/asset_library.md`](docs/asset_library.md) and
-[`assets/ATTRIBUTION.md`](assets/ATTRIBUTION.md) for provenance, licensing, and
-the exact integration boundary.
+Every `object_id` must be unique. There are three ways to resolve its geometry:
 
-The v3 dense-scene gate rejects meshes that are visually attractive but poor
-packing assets: scenes or multi-object scans, transparent materials, missing
-embedded textures, extreme component counts, candidates that cannot uniformly
-fit the proxy with at least 45% fill on every axis and 20% volume fill, or
-categories whose repeated-instance face/file budget is too large. Two open
-laptop candidates were rejected by this fit gate, so laptops intentionally
-remain procedural until a closed, packing-compatible licensed model passes.
+1. **Category lookup** — `category` deterministically selects a catalog model.
+2. **Frozen asset UID** — `asset_uid` pins an exact allowlisted mesh and requires
+   `--asset-manifest` plus `--asset-cache`.
+3. **Inline user asset** — an `asset` object may provide `size_m`, `mesh_path`,
+   mass, friction, support probability, transforms, and provenance. Relative mesh
+   paths resolve from the inventory file, and the mesh hash is frozen in the
+   exported scene.
 
-## Reproduction boundary
+Mesh coordinates are expected to match the declared visual scale. `size_m` or
+`collision_size_m` remains the physical proxy authority. External visual meshes
+do not silently change packing feasibility.
 
-- In scope: predicate language, spatial solver, physical placement, stability
-  estimation, feedback loop, asset retrieval interfaces, rendering, evaluation,
-  and project-style demos.
-- Deferred: the paper's robot demonstration pipeline and exact reproduction of
-  its private approximately 800-asset BlenderKit library. BlenderKit remains an
-  optional source adapter because its account/API credential and Blender export
-  runtime are not redistributable project inputs.
-- Not claimed: exact paper metrics before a frozen asset manifest, simulator
-  version, API models, prompts, seeds, and evaluation set are available.
+The agent must return:
 
-Procedural proxies keep the system self-contained; the optional frozen
-Objaverse pack improves visible category detail without claiming the breadth or
-photorealism of the authors' private asset collection.
+- a placement-order permutation containing every input object exactly once;
+- optional `stack_groups`, ordered bottom-to-top and restricted to assets marked
+  stackable;
+- optional `adjacency_groups` for semantically related peers.
+
+Invalid identity changes, incomplete permutations, duplicate group membership,
+unsafe nesting, and incorrect stack order are rejected before placement begins.
+
+## Outputs and audit trail
+
+Each successful `arrange` run writes:
+
+| File | Contents |
+| --- | --- |
+| `scene.json` | Resolved assets, final poses, support graph, placement order, provenance, and metadata |
+| `report.json` | Success category, issues, settle distance, coverage, packing, organization, and contact metrics |
+| `llm_trace.json` | Exact inventory facts, every agent response, model/provider metadata, validation status, and solver feedback |
+| `overview.svg` | Deterministic top-down diagnostic render |
+| `overview.png` | Genesis render when the GPU backend and renderer are used |
+
+Important metrics include:
+
+- `floor_coverage`: occupied fraction of usable container floor;
+- `bottom_layer_item_fraction`: how many items found a genuine floor placement;
+- `packing_layer_count`: number of realized support heights;
+- `organization_score`: combined coverage, compactness, grouping, and support quality;
+- `load_bearing_violation_count` and `semantic_support_violation_count`;
+- `maximum_visual_contact_gap_m`: remaining presentation gap after support-graph alignment;
+- `settle_distance_m`: final displacement measured by the selected backend.
+
+Do not treat an SVG from the quasistatic backend as physics evidence. It is a
+geometry diagnostic. Physical claims require a Genesis report from the final
+assembled scene.
+
+## Agent choices
+
+### Codex, default
+
+```bash
+agentic-packing arrange ... --agent codex
+agentic-packing arrange ... --agent codex --model gpt-5.6-sol
+```
+
+The Codex adapter runs non-interactively with a strict final-response JSON Schema
+and a read-only inner sandbox. The solver's feedback is included in the next
+round when a plan is invalid or incomplete.
+
+### OpenAI Responses API
+
+```bash
+agentic-packing arrange \
+  --inventory examples/inventory_dish_sink.json \
+  --output output/scenes/inventory_dish_sink_o4mini \
+  --agent openai --model o4-mini \
+  --backend quasistatic
+```
+
+### Deterministic baseline
+
+Use `--agent deterministic` for tests, offline debugging, and comparisons where
+LLM variability is undesirable.
+
+## Other entry points
+
+| Command | Purpose |
+| --- | --- |
+| `arrange` | Arrange a fixed inventory; this is the primary Agentic Packing workflow |
+| `generate` | Execute an existing predicate program from JSON |
+| `prompt` | Generate both objects and predicates from a free-scene description |
+| `demo` | Serve the local browser interface at `http://127.0.0.1:8787` |
+| `benchmark` | Run frozen `core`, `dense`, or `organized` acceptance suites |
+| `assets` | Fetch or hash-validate a licensed asset manifest |
+| `doctor` | Check configuration and backend imports |
+
+Start the browser demo:
+
+```bash
+python -m pip install -e '.[demo,render]'
+agentic-packing demo --backend quasistatic
+```
+
+The separate free-scene path is useful for reproducing the original paper-style
+task where the agent creates both the object set and the predicates:
+
+```bash
+agentic-packing prompt \
+  --prompt "Create a warm dining table for four people" \
+  --output output/scenes/dining_table \
+  --backend quasistatic
+```
+
+## Benchmarks and acceptance gates
+
+Run the test suite and static checks:
+
+```bash
+python -m pytest -q
+python -m ruff check src tests
+```
+
+Run the deterministic scene gates:
+
+```bash
+agentic-packing benchmark \
+  --suite core --backend quasistatic --repetitions 20 \
+  --report output/evaluation/core_quasistatic_100.json
+
+agentic-packing benchmark \
+  --suite dense --backend quasistatic --repetitions 10 \
+  --report output/evaluation/dense_quasistatic_20.json
+
+agentic-packing benchmark \
+  --suite organized --backend quasistatic --repetitions 3 \
+  --report output/evaluation/organized_quasistatic_6.json
+```
+
+The frozen core report contains 100/100 successful geometry generations over
+five scene families. The dense report contains 20/20 successful runs; its basket
+and sink scenes use multiple support layers. The organized gate additionally
+requires floor coverage and compactness, zero overloaded or semantically invalid
+supports, zero visible-gap violations, and a minimum organization score. These
+reports are explicitly `geometry_only`; they do not replace GPU validation.
+
+## Design details
+
+### Floor-first organization
+
+The organized solver sorts by footprint and load-bearing value but repeatedly
+rescans remaining objects. Smaller pieces can refill floor holes before the
+solver opens an upper layer. Upper placements must pass support-area, mass, and
+semantic compatibility checks. Flat electronics are not treated as generic
+shelves, while compatible paper goods or workshop tools may share supports.
+
+### Explicit semantic stacks
+
+Same-category objects are not automatically stacked. Nesting is accepted only
+when the resolved asset is marked `stackable`, the agent requests an ordered
+group, and domain validation approves it. The accepted columns are recorded in
+`scene.metadata.semantic_stacks`.
+
+### Collision versus presentation geometry
+
+The system deliberately uses two representations:
+
+- a compact procedural proxy controls collision, containment, support, and
+  stability;
+- a licensed GLB is a collision-disabled presentation overlay.
+
+The support graph aligns visible upper objects to their visible supporters after
+packing, removing apparent floating caused by proxy/mesh height differences.
+This visual correction is measured and cannot alter the accepted collision scene.
+
+### Asset quality gate
+
+The `objaverse_cc_by_v3` manifest contains 24 manually screened models across 17
+categories. Every entry must be CC BY 4.0, match its SHA-256, meet the frozen
+quality threshold, remain opaque, carry embedded base-color textures, fit its
+collision proxy, and pass dense Genesis scene QA. Scene scans, transparent assets,
+extreme component counts, and models with poor proxy fill are rejected even when
+their thumbnails look attractive.
+
+See [the asset guide](docs/asset_library.md) and
+[the attribution ledger](assets/ATTRIBUTION.md) for exact provenance and license
+terms.
+
+## Repository layout
+
+```text
+agentic-packing/
+├── assets/
+│   ├── manifests/          # frozen licensed-model manifests
+│   └── ATTRIBUTION.md      # source and license ledger
+├── configs/paper.yaml      # solver, physics, feedback, and gate thresholds
+├── docs/
+│   ├── architecture.md     # module contracts and call flows
+│   ├── asset_library.md    # asset acquisition and QA boundary
+│   └── reproduction_spec.md
+├── examples/               # predicate programs and fixed inventories
+├── src/physcensis/         # Python package; retained for import compatibility
+├── tests/                  # parser, solver, agent, asset, and gate tests
+├── tools/                  # Objaverse curation and audit utilities
+└── output/                 # generated scenes and reports; mostly Git-ignored
+```
+
+The import package remains `physcensis` to avoid needlessly breaking existing
+Python consumers. The distribution and primary CLI are named `agentic-packing`.
+Module boundaries and sequence diagrams are documented in
+[docs/architecture.md](docs/architecture.md).
+
+## Reproduction boundary and limitations
+
+In scope are the predicate language, fixed-inventory agent loop, spatial and
+physical placement, stability estimation, structured feedback, licensed-asset
+interfaces, rendering, evaluation, and dense demonstrations.
+
+Not currently claimed:
+
+- equivalence to the original authors' private approximately 800-asset library;
+- reproduction of their robot demonstration pipeline;
+- photorealistic material parity with private BlenderKit assets;
+- collision fidelity of arbitrary concave user meshes;
+- universal optimality for packing or human household preferences;
+- paper metric equivalence without identical assets, simulator versions, models,
+  prompts, seeds, and evaluation data.
+
+The current solver is strongest for container-scale rigid household, office, and
+workshop objects represented by conservative box-like collision proxies. Flexible
+objects, deformables, liquids, articulated containers, and manipulation-path
+planning are outside the present contract.
+
+The frozen method contract is in
+[docs/reproduction_spec.md](docs/reproduction_spec.md). Please keep claims tied to
+the backend and artifacts that produced them.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). New assets must include redistributable
+provenance, license metadata, a frozen hash, and visual/dense-scene QA evidence.
+Changes to packing behavior should include a narrow unit test and, when relevant,
+the corresponding acceptance-gate result.
+
+## License
+
+The code is released under [Apache License 2.0](LICENSE). External model licenses
+are recorded separately in [assets/ATTRIBUTION.md](assets/ATTRIBUTION.md); the code
+license does not supersede asset-specific attribution requirements.

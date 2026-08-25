@@ -41,7 +41,7 @@ def fetch_shard(shard: str, output_dir: Path, retries: int = 3) -> tuple[str, st
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     request = urllib.request.Request(
         f"{BASE_URL}/{shard}.json.gz",
-        headers={"User-Agent": "physcensis-reproduction-asset-curator/0.1"},
+        headers={"User-Agent": "agentic-packing-asset-curator/0.1"},
     )
     part = target.with_suffix(target.suffix + ".part")
     for attempt in range(1, retries + 1):

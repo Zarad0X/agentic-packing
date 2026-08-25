@@ -1,7 +1,8 @@
 # Contributing
 
-Contributions that improve the clean-room method reproduction, physical
-validation, documentation, or redistributable asset integrations are welcome.
+Contributions that improve Agentic Packing's planning loop, dense placement,
+physical validation, documentation, or redistributable asset integrations are
+welcome.
 
 ## Development setup
 
@@ -9,6 +10,7 @@ validation, documentation, or redistributable asset integrations are welcome.
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e '.[dev]'
+agentic-packing doctor --backend quasistatic
 python -m ruff check src tests
 python -m pytest -q
 ```

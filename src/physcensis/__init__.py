@@ -1,4 +1,4 @@
-"""Clean-room PhyScensis reproduction."""
+"""Agentic Packing: LLM-guided physical object arrangement."""
 
 from physcensis.types import PlacementProgram, SceneState
 

@@ -3,13 +3,13 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "physcensis-reproduction"
+name = "agentic-packing"
 version = "0.1.0"
-description = "Clean-room reproduction of PhyScensis physical scene arrangement"
+description = "LLM-guided dense object arrangement with geometric and physical validation"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "Apache-2.0"}
-authors = [{name = "PhyScensis reproduction contributors"}]
+authors = [{name = "Agentic Packing contributors"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Zarad0X/physcensis-reproduction"
-Repository = "https://github.com/Zarad0X/physcensis-reproduction"
-Issues = "https://github.com/Zarad0X/physcensis-reproduction/issues"
+Homepage = "https://github.com/Zarad0X/agentic-packing"
+Repository = "https://github.com/Zarad0X/agentic-packing"
+Issues = "https://github.com/Zarad0X/agentic-packing/issues"
 
 [project.optional-dependencies]
 genesis = ["genesis-world>=0.3"]
@@ -41,6 +41,7 @@ demo = ["fastapi>=0.115", "uvicorn>=0.30", "jinja2>=3.1"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.8"]
 
 [project.scripts]
+agentic-packing = "physcensis.cli:main"
 physcensis = "physcensis.cli:main"
 
 [tool.setuptools]
