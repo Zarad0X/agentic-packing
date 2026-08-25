@@ -1,0 +1,33 @@
+{
+  "container": {
+    "object_id": "my_kitchen_sink",
+    "category": "sink",
+    "position_xy_m": [0.0, 0.0],
+    "yaw_deg": 0.0
+  },
+  "objects": [
+    {"object_id": "plate_white_1", "category": "plate"},
+    {"object_id": "plate_white_2", "category": "plate"},
+    {"object_id": "plate_white_3", "category": "plate"},
+    {"object_id": "plate_white_4", "category": "plate"},
+    {"object_id": "bowl_white_1", "category": "bowl"},
+    {"object_id": "bowl_white_2", "category": "bowl"},
+    {"object_id": "bowl_white_3", "category": "bowl"},
+    {"object_id": "bowl_white_4", "category": "bowl"},
+    {"object_id": "cup_stackable_1", "category": "stackable cup"},
+    {"object_id": "cup_stackable_2", "category": "stackable cup"},
+    {"object_id": "cup_stackable_3", "category": "stackable cup"},
+    {"object_id": "cup_stackable_4", "category": "stackable cup"},
+    {"object_id": "mug_blue", "category": "cup"},
+    {"object_id": "mug_green", "category": "cup"},
+    {"object_id": "jar_small_1", "category": "jar"},
+    {"object_id": "jar_small_2", "category": "jar"},
+    {"object_id": "can_small_1", "category": "can"},
+    {"object_id": "can_small_2", "category": "can"},
+    {"object_id": "pantry_box_1", "category": "pantry box"},
+    {"object_id": "pantry_box_2", "category": "pantry box"}
+  ],
+  "arrangement": {
+    "allow_protrusion_m": 0.10
+  }
+}

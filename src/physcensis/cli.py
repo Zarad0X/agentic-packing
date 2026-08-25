@@ -8,7 +8,13 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
-from physcensis.agent import OpenAIPredicateAgent, TemplatePredicateAgent
+from physcensis.agent import (
+    CodexInventoryAgent,
+    DeterministicInventoryAgent,
+    OpenAIInventoryAgent,
+    OpenAIPredicateAgent,
+    TemplatePredicateAgent,
+)
 from physcensis.asset_library import (
     AssetManifestError,
     LicensedAssetManifest,
@@ -71,14 +77,30 @@ def _arrange(args: argparse.Namespace) -> int:
     with inventory_path.open("r", encoding="utf-8") as stream:
         payload = json.load(stream)
     pipeline = ScenePipeline(config, backend, catalog=_catalog(args))
-    result = pipeline.run_inventory(
+    if args.agent == "codex":
+        agent = CodexInventoryAgent(model=args.model, working_directory=Path.cwd())
+    elif args.agent == "openai":
+        agent = OpenAIInventoryAgent(model=args.model or "o4-mini")
+    else:
+        agent = DeterministicInventoryAgent()
+    result = pipeline.generate_inventory(
+        args.prompt,
         payload,
+        agent,
         base_dir=inventory_path.parent,
         output_dir=args.output,
     )
     supplied_ids = result.scene.metadata.get("inventory_input_object_ids", [])
+    if not supplied_ids and isinstance(payload, dict) and isinstance(payload.get("objects"), list):
+        supplied_ids = [
+            item.get("object_id") for item in payload["objects"] if isinstance(item, dict)
+        ]
+    trace_path = Path(args.output) / "llm_trace.json"
     summary = {
         "success": result.success,
+        "agent": args.agent,
+        "model": args.model or ("codex_config_default" if args.agent == "codex" else None),
+        "rounds": result.rounds,
         "inventory_object_count": len(supplied_ids),
         "arranged_object_ids": result.scene.metadata.get("physical_placement_order", []),
         "feedback": result.feedback.summary,
@@ -91,6 +113,10 @@ def _arrange(args: argparse.Namespace) -> int:
             }
             for issue in result.feedback.issues
         ],
+        "planned_stack_groups": result.scene.metadata.get("inventory_agent_plan", {}).get(
+            "stack_groups", []
+        ),
+        "llm_trace": str(trace_path) if trace_path.is_file() else None,
         "output": str(args.output) if result.artifacts else None,
     }
     print(json.dumps(summary, indent=2))
@@ -232,7 +258,26 @@ def build_parser() -> argparse.ArgumentParser:
     )
     arrange.add_argument("--config", default="configs/paper.yaml")
     arrange.add_argument("--inventory", required=True)
+    arrange.add_argument(
+        "--prompt",
+        default=(
+            "Arrange every supplied object into the container like careful everyday storage. "
+            "Use the floor efficiently, keep similar objects together, and stack only genuinely "
+            "nestable repeated objects."
+        ),
+    )
     arrange.add_argument("--output", required=True)
+    arrange.add_argument(
+        "--agent",
+        choices=("codex", "openai", "deterministic"),
+        default="codex",
+        help="planning provider; codex uses the authenticated local Codex CLI",
+    )
+    arrange.add_argument(
+        "--model",
+        default=None,
+        help="model override; Codex uses its configured default and OpenAI uses o4-mini",
+    )
     arrange.add_argument(
         "--backend",
         choices=("quasistatic", "genesis"),
@@ -303,6 +348,7 @@ def main(argv: list[str] | None = None) -> int:
         AssetManifestError,
         ConfigError,
         OSError,
+        RuntimeError,
         ValueError,
         json.JSONDecodeError,
     ) as exc:

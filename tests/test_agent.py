@@ -4,7 +4,11 @@ import json
 from types import SimpleNamespace
 from unittest import TestCase
 
-from physcensis.agent import OpenAIPredicateAgent, TemplatePredicateAgent
+from physcensis.agent import (
+    OpenAIInventoryAgent,
+    OpenAIPredicateAgent,
+    TemplatePredicateAgent,
+)
 from physcensis.predicates import PredicateParser
 
 
@@ -52,3 +56,39 @@ class AgentTest(TestCase):
         self.assertEqual(payload[-1], ["cup_0", "PLACE-ANYWHERE", "root", {}])
         self.assertEqual(responses.kwargs["text"]["format"]["type"], "json_schema")
         PredicateParser().parse(payload)
+
+    def test_openai_inventory_agent_uses_fixed_identity_schema(self) -> None:
+        plan = {
+            "placement_order": ["plate_1", "plate_2"],
+            "stack_groups": [
+                {
+                    "group_id": "plates",
+                    "bottom_to_top_object_ids": ["plate_1", "plate_2"],
+                }
+            ],
+            "adjacency_groups": [],
+            "rationale": "Keep identical plates in one ordinary stack.",
+        }
+
+        class Responses:
+            def create(self, **kwargs):
+                self.kwargs = kwargs
+                return SimpleNamespace(
+                    id="resp_inventory",
+                    output_text=json.dumps(plan),
+                    usage=None,
+                )
+
+        responses = Responses()
+        agent = OpenAIInventoryAgent(client=SimpleNamespace(responses=responses))
+        result = agent.propose_inventory(
+            "organize the dishes",
+            {"container": {"object_id": "sink"}, "objects": []},
+        )
+
+        self.assertEqual(result, plan)
+        self.assertEqual(
+            responses.kwargs["text"]["format"]["name"],
+            "fixed_inventory_arrangement_plan",
+        )
+        self.assertEqual(agent.last_call_metadata["response_id"], "resp_inventory")

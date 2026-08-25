@@ -6,7 +6,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from physcensis.inventory import InventoryParser, InventoryValidationError
+from physcensis.agent import DeterministicInventoryAgent
+from physcensis.assets import PrimitiveAssetCatalog
+from physcensis.inventory import (
+    InventoryParser,
+    InventoryPlanParser,
+    InventoryPlanValidationError,
+    InventoryValidationError,
+)
 from physcensis.physics import QuasiStaticBackend
 from physcensis.pipeline import ScenePipeline
 from tests.helpers import make_dense_test_config
@@ -41,6 +48,35 @@ class InventoryTest(unittest.TestCase):
         }
         with self.assertRaisesRegex(InventoryValidationError, "must be unique"):
             InventoryParser().parse(payload)
+
+    def test_plan_cannot_force_ordinary_cups_into_a_stack(self) -> None:
+        payload = {
+            "container": {"object_id": "basket", "category": "basket"},
+            "objects": [
+                {"object_id": "mug_a", "category": "cup"},
+                {"object_id": "mug_b", "category": "cup"},
+            ],
+        }
+        inventory = InventoryParser().parse(payload)
+        catalog = PrimitiveAssetCatalog()
+        assets = {
+            spec.object_id: catalog.resolve(spec.object_id, spec.category)
+            for spec in inventory.objects
+        }
+        plan = {
+            "placement_order": ["mug_a", "mug_b"],
+            "stack_groups": [
+                {
+                    "group_id": "unsafe_mugs",
+                    "bottom_to_top_object_ids": ["mug_a", "mug_b"],
+                }
+            ],
+            "adjacency_groups": [],
+            "rationale": "unsafe on purpose",
+        }
+
+        with self.assertRaisesRegex(InventoryPlanValidationError, "marked stackable"):
+            InventoryPlanParser().parse(plan, inventory, assets)
 
     def test_inline_user_mesh_is_resolved_and_hashed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -107,6 +143,69 @@ class InventoryTest(unittest.TestCase):
             {"too_large_a", "too_large_b"},
         )
         self.assertEqual(set(result.scene.objects), {"tiny_bin"})
+
+    def test_agent_loop_rejects_identity_change_then_replans(self) -> None:
+        payload = {
+            "container": {"object_id": "basket", "category": "basket"},
+            "objects": [
+                {"object_id": "can_a", "category": "can"},
+                {"object_id": "can_b", "category": "can"},
+            ],
+        }
+
+        class RepairingAgent:
+            def __init__(self):
+                self.calls = 0
+                self.last_call_metadata = {"provider": "test"}
+                self.fallback = DeterministicInventoryAgent()
+
+            def propose_inventory(
+                self, prompt, inventory_context, *, previous_plan=None, feedback=None
+            ):
+                self.calls += 1
+                if self.calls == 1:
+                    return {
+                        "placement_order": ["can_a", "invented_can"],
+                        "stack_groups": [],
+                        "adjacency_groups": [],
+                        "rationale": "invalid on purpose",
+                    }
+                self.assert_feedback = feedback
+                return self.fallback.propose_inventory(prompt, inventory_context)
+
+        agent = RepairingAgent()
+        result = ScenePipeline(make_dense_test_config(), QuasiStaticBackend()).generate_inventory(
+            "keep both cans",
+            payload,
+            agent,
+        )
+
+        self.assertTrue(result.success)
+        self.assertEqual(result.rounds, 2)
+        self.assertEqual(result.agent_trace[0]["status"], "plan_rejected")
+        self.assertEqual(agent.assert_feedback.category, "grammar_error")
+        self.assertEqual(
+            set(result.scene.metadata["inventory_input_object_ids"]), {"can_a", "can_b"}
+        )
+
+    def test_agent_plan_realizes_repeated_dish_stacks_and_trace(self) -> None:
+        payload = json.loads(Path("examples/inventory_dish_sink.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as directory:
+            result = ScenePipeline(
+                make_dense_test_config(), QuasiStaticBackend()
+            ).generate_inventory(
+                "Stack identical dishes and use all supplied objects.",
+                payload,
+                DeterministicInventoryAgent(),
+                base_dir="examples",
+                output_dir=directory,
+            )
+
+            self.assertTrue(result.success, [issue.message for issue in result.feedback.issues])
+            self.assertEqual(result.feedback.measurements["semantic_stack_count"], 3.0)
+            self.assertEqual(result.feedback.measurements["nested_object_count"], 12.0)
+            self.assertEqual(len(result.scene.metadata["physical_placement_order"]), 20)
+            self.assertTrue(Path(directory, "llm_trace.json").is_file())
 
 
 if __name__ == "__main__":

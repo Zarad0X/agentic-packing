@@ -77,20 +77,48 @@ CUDA_VISIBLE_DEVICES=0 physcensis prompt \
 
 ## Arrange a fixed inventory
 
-`arrange` is the arrangement-only entry point for the practical setting where
+`arrange` is the end-to-end agent entry point for the practical setting where
 the object instances already exist. The input names one target container and
-lists every supplied object separately. Object IDs and count are immutable: the
-planner may change position, yaw, layer, and support, but it never substitutes,
-drops, or invents an item.
+lists every supplied object separately. The default `codex` agent uses the
+authenticated local Codex CLI to propose a strict semantic plan, then the
+geometry/physics solver realizes it and returns structured feedback for another
+round when necessary. Object IDs and count are immutable: neither the agent nor
+the solver may substitute, drop, or invent an item.
 
 Run the included 20-object example:
 
 ```bash
 physcensis arrange \
-  --inventory examples/inventory_tool_crate.json \
-  --output output/scenes/inventory_tool_crate \
+  --inventory examples/inventory_dish_sink.json \
+  --output output/scenes/inventory_dish_sink_codex \
   --backend quasistatic --stability-samples 0
 ```
+
+This path uses the current Codex login and configured default model; it does
+not require `OPENAI_API_KEY`. Pass `--model` to pin a Codex model explicitly.
+Each round is written to `llm_trace.json`, including the exact inventory facts,
+validated plan, provider metadata, solver feedback, and measurements. The
+included dish inventory demonstrates three model-planned stacks: four plates,
+four bowls, and four explicitly stackable cups. Ordinary handled cups remain
+unstacked because their asset metadata does not authorize nesting.
+
+For the paper-model comparison, install the API extra and select the Responses
+API adapter explicitly:
+
+```bash
+python -m pip install -e '.[agent]'
+export OPENAI_API_KEY=...  # never store the key in this repository
+physcensis arrange \
+  --inventory examples/inventory_dish_sink.json \
+  --output output/scenes/inventory_dish_sink_o4mini \
+  --agent openai --model o4-mini --backend quasistatic
+```
+
+`--agent deterministic` is an explicit offline fallback used by regression
+tests. It exercises the same plan validation and physical solver but is not an
+LLM run. When `arrange` itself is launched from an outer filesystem sandbox,
+the process must still permit the Codex CLI to update its normal `~/.codex`
+session state.
 
 The inventory schema is deliberately smaller than the predicate language:
 
@@ -119,17 +147,24 @@ hash is frozen into `scene.json`. Mesh coordinates are assumed to already use
 the declared scale, while `size_m` or `collision_size_m` remains the physical
 proxy authority.
 
-The planner exhausts feasible bottom placements globally before opening upper
-layers, then enforces semantic and load-compatible supports. If the complete
-set cannot fit, the command fails and reports `unplaced_object_ids`; it never
-returns a deceptively successful partial arrangement. Use `--backend genesis`
-for the final assembled-scene physical validation and PNG render.
+The agent returns an exact placement-order permutation, optional same-asset
+stack groups, and optional adjacency groups. Schema and domain validation reject
+missing or invented IDs, duplicate memberships, unsafe stack requests, and
+bottom-to-top ordering errors before geometry runs. The planner then exhausts
+feasible bottom placements globally before opening upper layers, while forcing
+approved stack members onto their requested predecessor and preferring adjacent
+peer groups. It still enforces semantic and load-compatible supports. If the
+complete set cannot fit, solver feedback reports `unplaced_object_ids` to the
+next agent round; no round can return a deceptively successful partial result.
+Use `--backend genesis` for the final assembled-scene physical validation and
+PNG render.
 
-## Natural-language agent
+## Free-scene natural-language agent
 
-The repository works offline with a deterministic prompt-family agent. An
-optional OpenAI Responses API adapter emits the same strict predicate schema and
-participates in the same structured feedback loop:
+The separate `prompt` command creates both assets and predicates from a free
+scene description. It works offline with a deterministic prompt-family agent;
+an optional OpenAI Responses API adapter emits the same strict predicate schema
+and participates in the same structured feedback loop:
 
 ```bash
 python -m pip install -e '.[agent]'

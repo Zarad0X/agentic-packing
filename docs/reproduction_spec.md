@@ -77,7 +77,7 @@ The stable-demo completion gate has been met on the checked-in implementation:
 
 | Evidence | Result | Interpretation |
 | --- | ---: | --- |
-| Unit/integration tests | 35 passed | Parser, geometry, inventory identity, agent routing, dense storage, support alignment, evaluation, and licensed-asset integrity |
+| Unit/integration tests | 39 passed | Parser, geometry, inventory identity, agent routing, dense storage, support alignment, evaluation, and licensed-asset integrity |
 | Ruff | passed | Source and tests |
 | Core gate | 100/100, five families | `geometry_only`; 20 runs per family, at least 15 objects each |
 | Dining scene | 16 objects, 0 spatial penalty, 0.032 mm settle | Real Genesis, 400 steps |
@@ -89,6 +89,7 @@ The stable-demo completion gate has been met on the checked-in implementation:
 | Tool crate | 24 total / 23 packed, 80.7% floor coverage, 81.2% organization, 0.673 mm settle | Real Genesis, 400 steps; 58.7 mm maximum pre-alignment visual gap reduced to 0, zero load/semantic/visual-support violations |
 | Office tote | 28 total / 27 packed, 89.8% floor coverage, 87.1% organization, 0.978 mm settle | Real Genesis, 400 steps; 16.8 mm maximum pre-alignment visual gap reduced to 0, zero load/semantic/visual-support violations |
 | Fixed inventory | 20/20 supplied items arranged, 79.2% floor coverage, 80.8% organization | Quasistatic geometry; exact input IDs retained, zero load/semantic/visual-support violations |
+| Codex inventory agent | 20/20 supplied dish items, 3 planned stacks / 12 nested members | Real authenticated Codex planning plus quasistatic solving; exact IDs retained, zero load/semantic/visual-support violations |
 | Interactive demo | prompt-to-preview/export verified | Progress states, measurements, predicates, and downloadable scene JSON |
 | Licensed asset pack v3 | 24/24 files validated | CC BY 4.0, SHA-256, Objaverse++ score 3, opaque and embedded-texture only, proxy-fit audit plus dense Genesis QA |
 
@@ -130,15 +131,18 @@ uses two plate variants, one bowl, two mugs, and one stackable-cup variant; its
 24-object Genesis result retains the same five layers, 31.3% fill, and 4.186 mm
 settle distance while removing the v1 transparent/empty-looking dishware.
 
-## Fixed-inventory extension
+## Fixed-inventory agent extension
 
 The `physcensis arrange` fixed-inventory interface is a practical extension,
-not a claim about the paper's exact agent interface. It keeps supplied object
-identity and count fixed, reuses the validated organized container solver, and
-requires one complete arrangement before final simulation. Exact asset UIDs and
-inline user meshes make model choice traceable; procedural collision proxies
-remain the physical authority unless the inventory explicitly supplies its own
-proxy dimensions and physical metadata.
+not a claim about the paper's exact agent interface. It runs a complete
+provider-neutral planning loop over already supplied objects: Codex is the
+default agent for the user's workflow, while `OpenAIInventoryAgent(o4-mini)` is
+the paper-model comparison. Strict validation keeps supplied object identity
+and count fixed, and the validated organized container solver requires one
+complete arrangement before final simulation. Exact asset UIDs and inline user
+meshes make model choice traceable; procedural collision proxies remain the
+physical authority unless the inventory explicitly supplies its own proxy
+dimensions and physical metadata.
 
 ## Non-goals
 

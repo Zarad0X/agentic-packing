@@ -14,6 +14,10 @@ class InventoryValidationError(ValueError):
     """Raised when a fixed-object inventory is incomplete or ambiguous."""
 
 
+class InventoryPlanValidationError(ValueError):
+    """Raised when an agent plan changes inventory identity or requests unsafe stacks."""
+
+
 @dataclass(frozen=True)
 class InventoryObjectSpec:
     object_id: str
@@ -29,6 +33,186 @@ class InventorySpec:
     container_position_xy_m: tuple[float, float] = (0.0, 0.0)
     container_yaw_deg: float = 0.0
     allow_protrusion_m: float = 0.0
+
+
+@dataclass(frozen=True)
+class InventoryStackGroup:
+    group_id: str
+    bottom_to_top_object_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class InventoryAdjacencyGroup:
+    group_id: str
+    object_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class InventoryArrangementPlan:
+    """Strict LLM output consumed by the fixed-inventory physical planner."""
+
+    placement_order: tuple[str, ...]
+    stack_groups: tuple[InventoryStackGroup, ...]
+    adjacency_groups: tuple[InventoryAdjacencyGroup, ...]
+    rationale: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "placement_order": list(self.placement_order),
+            "stack_groups": [
+                {
+                    "group_id": group.group_id,
+                    "bottom_to_top_object_ids": list(group.bottom_to_top_object_ids),
+                }
+                for group in self.stack_groups
+            ],
+            "adjacency_groups": [
+                {"group_id": group.group_id, "object_ids": list(group.object_ids)}
+                for group in self.adjacency_groups
+            ],
+            "rationale": self.rationale,
+        }
+
+
+class InventoryPlanParser:
+    """Validate that a model plan is complete, identity preserving, and realizable."""
+
+    _fields = frozenset(
+        {"placement_order", "stack_groups", "adjacency_groups", "rationale"}
+    )
+
+    def parse(
+        self,
+        payload: Any,
+        inventory: InventorySpec,
+        assets: dict[str, AssetRecord],
+    ) -> InventoryArrangementPlan:
+        if not isinstance(payload, dict):
+            raise InventoryPlanValidationError("LLM arrangement plan must be a JSON object")
+        unknown = sorted(set(payload) - self._fields)
+        if unknown:
+            raise InventoryPlanValidationError(
+                f"Unknown LLM arrangement plan fields: {', '.join(unknown)}"
+            )
+        expected = [obj.object_id for obj in inventory.objects]
+        order = self._id_list(payload.get("placement_order"), "placement_order")
+        if len(order) != len(expected) or set(order) != set(expected):
+            missing = sorted(set(expected) - set(order))
+            invented = sorted(set(order) - set(expected))
+            raise InventoryPlanValidationError(
+                "placement_order must be an exact permutation of all supplied object ids; "
+                f"missing={missing}, invented={invented}, supplied={len(expected)}, planned={len(order)}"
+            )
+
+        stack_values = payload.get("stack_groups", [])
+        if not isinstance(stack_values, list):
+            raise InventoryPlanValidationError("stack_groups must be a JSON array")
+        stack_groups: list[InventoryStackGroup] = []
+        stacked_ids: set[str] = set()
+        group_ids: set[str] = set()
+        for index, value in enumerate(stack_values):
+            group_id, members = self._group(
+                value,
+                index,
+                id_field="bottom_to_top_object_ids",
+                collection="stack_groups",
+            )
+            if group_id in group_ids:
+                raise InventoryPlanValidationError(f"Duplicate group_id: {group_id}")
+            group_ids.add(group_id)
+            if len(members) < 2:
+                raise InventoryPlanValidationError(
+                    f"stack_groups[{index}] must contain at least two object ids"
+                )
+            self._known_ids(members, expected, f"stack_groups[{index}]")
+            overlap = sorted(stacked_ids.intersection(members))
+            if overlap:
+                raise InventoryPlanValidationError(
+                    f"An object can belong to only one stack group: {', '.join(overlap)}"
+                )
+            non_stackable = [object_id for object_id in members if not assets[object_id].stackable]
+            if non_stackable:
+                raise InventoryPlanValidationError(
+                    "Only assets explicitly marked stackable may be forced into a stack; "
+                    f"invalid={non_stackable}"
+                )
+            asset_ids = {assets[object_id].asset_id for object_id in members}
+            descriptions = {assets[object_id].description for object_id in members}
+            if len(asset_ids) != 1 and len(descriptions) != 1:
+                raise InventoryPlanValidationError(
+                    f"stack_groups[{index}] must contain the same asset or normalized category"
+                )
+            order_rank = {object_id: rank for rank, object_id in enumerate(order)}
+            if [order_rank[object_id] for object_id in members] != sorted(
+                order_rank[object_id] for object_id in members
+            ):
+                raise InventoryPlanValidationError(
+                    f"stack_groups[{index}] bottom-to-top members must appear in that order in placement_order"
+                )
+            stacked_ids.update(members)
+            stack_groups.append(InventoryStackGroup(group_id, tuple(members)))
+
+        adjacency_values = payload.get("adjacency_groups", [])
+        if not isinstance(adjacency_values, list):
+            raise InventoryPlanValidationError("adjacency_groups must be a JSON array")
+        adjacency_groups: list[InventoryAdjacencyGroup] = []
+        for index, value in enumerate(adjacency_values):
+            group_id, members = self._group(
+                value,
+                index,
+                id_field="object_ids",
+                collection="adjacency_groups",
+            )
+            if group_id in group_ids:
+                raise InventoryPlanValidationError(f"Duplicate group_id: {group_id}")
+            group_ids.add(group_id)
+            if len(members) < 2:
+                raise InventoryPlanValidationError(
+                    f"adjacency_groups[{index}] must contain at least two object ids"
+                )
+            self._known_ids(members, expected, f"adjacency_groups[{index}]")
+            adjacency_groups.append(InventoryAdjacencyGroup(group_id, tuple(members)))
+
+        rationale = str(payload.get("rationale", "")).strip()
+        if not rationale:
+            raise InventoryPlanValidationError("rationale must be non-empty")
+        return InventoryArrangementPlan(
+            tuple(order), tuple(stack_groups), tuple(adjacency_groups), rationale
+        )
+
+    @staticmethod
+    def _id_list(value: Any, field: str) -> list[str]:
+        if not isinstance(value, list):
+            raise InventoryPlanValidationError(f"{field} must be a JSON array")
+        result = [str(item).strip() for item in value]
+        if any(not item for item in result):
+            raise InventoryPlanValidationError(f"{field} contains an empty object id")
+        if len(result) != len(set(result)):
+            raise InventoryPlanValidationError(f"{field} contains duplicate object ids")
+        return result
+
+    def _group(
+        self,
+        value: Any,
+        index: int,
+        *,
+        id_field: str,
+        collection: str,
+    ) -> tuple[str, list[str]]:
+        if not isinstance(value, dict) or set(value) != {"group_id", id_field}:
+            raise InventoryPlanValidationError(
+                f"{collection}[{index}] must contain exactly group_id and {id_field}"
+            )
+        group_id = str(value["group_id"]).strip()
+        if not group_id:
+            raise InventoryPlanValidationError(f"{collection}[{index}].group_id is empty")
+        return group_id, self._id_list(value[id_field], f"{collection}[{index}].{id_field}")
+
+    @staticmethod
+    def _known_ids(values: list[str], expected: list[str], field: str) -> None:
+        unknown = sorted(set(values) - set(expected))
+        if unknown:
+            raise InventoryPlanValidationError(f"{field} contains unknown ids: {unknown}")
 
 
 def _vector(value: Any, field: str, length: int) -> tuple[float, ...]:

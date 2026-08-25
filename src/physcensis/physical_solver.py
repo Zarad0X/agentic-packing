@@ -9,6 +9,7 @@ from dataclasses import replace
 
 from physcensis.assets import AssetCatalog, AssetNotFoundError
 from physcensis.config import ReproductionConfig
+from physcensis.inventory import InventoryArrangementPlan
 from physcensis.occupancy import (
     ContainerPlacementCandidate,
     PlacementCandidate,
@@ -89,6 +90,7 @@ class PhysicalSolver:
         objects: list[SceneObject],
         *,
         allow_protrusion_m: float = 0.0,
+        arrangement_plan: InventoryArrangementPlan | None = None,
     ) -> SolveReport:
         """Arrange a fixed set of object instances without replacing or dropping any."""
         working = scene.clone()
@@ -116,11 +118,37 @@ class PhysicalSolver:
                 },
             }
         )
+        planned_objects = [replace(obj) for obj in objects]
+        if arrangement_plan is not None:
+            stacked_ids = {
+                object_id
+                for group in arrangement_plan.stack_groups
+                for object_id in group.bottom_to_top_object_ids
+            }
+            planned_objects = [
+                self._with_nesting_collision(obj) if obj.object_id in stacked_ids else obj
+                for obj in planned_objects
+            ]
+            working.metadata["inventory_arrangement_plan"] = arrangement_plan.to_dict()
         accepted = self._place_organized_objects(
             working,
-            [replace(obj) for obj in objects],
+            planned_objects,
             container,
-            {"allow_protrusion_m": allow_protrusion_m},
+            {
+                "allow_protrusion_m": allow_protrusion_m,
+                "placement_order": None
+                if arrangement_plan is None
+                else arrangement_plan.placement_order,
+                "stack_groups": ()
+                if arrangement_plan is None
+                else tuple(
+                    group.bottom_to_top_object_ids
+                    for group in arrangement_plan.stack_groups
+                ),
+                "adjacency_groups": ()
+                if arrangement_plan is None
+                else tuple(group.object_ids for group in arrangement_plan.adjacency_groups),
+            },
         )
         if len(accepted) != len(objects):
             rejected_ids = list(working.metadata.pop("organized_failure_ids", supplied_ids))
@@ -135,6 +163,22 @@ class PhysicalSolver:
                 },
             )
             return SolveReport(False, working, [issue])
+        if arrangement_plan is not None:
+            stacks = list(working.metadata.get("semantic_stacks", []))
+            for group in arrangement_plan.stack_groups:
+                members = [working.get(object_id) for object_id in group.bottom_to_top_object_ids]
+                stacks.append(
+                    {
+                        "stack_id": group.group_id,
+                        "category": members[0].asset.description,
+                        "container_id": container_id,
+                        "member_ids": list(group.bottom_to_top_object_ids),
+                        "asset_variant": self._asset_variant_key(members[0]),
+                        "mode": "llm_planned_nested",
+                        "stacking_step_ratio": members[0].asset.stacking_step_ratio,
+                    }
+                )
+            working.metadata["semantic_stacks"] = stacks
         return self._finalize_scene(working, accepted, [])
 
     def _finalize_scene(
@@ -392,13 +436,41 @@ class PhysicalSolver:
         params: Mapping[str, object],
     ) -> list[str]:
         """Fill the floor globally before allowing load-aware upper layers."""
-        remaining = sorted(objects, key=self._organized_object_priority)
+        placement_order = params.get("placement_order")
+        if isinstance(placement_order, (list, tuple)):
+            rank = {str(object_id): index for index, object_id in enumerate(placement_order)}
+            remaining = sorted(objects, key=lambda obj: rank.get(obj.object_id, len(rank)))
+        else:
+            remaining = sorted(objects, key=self._organized_object_priority)
+        stack_groups = [
+            tuple(str(object_id) for object_id in group)
+            for group in params.get("stack_groups", ())
+            if isinstance(group, (list, tuple))
+        ]
+        forced_upper_ids = {
+            object_id for group in stack_groups for object_id in group[1:]
+        }
+        preferred_support = {
+            object_id: group[index - 1]
+            for group in stack_groups
+            for index, object_id in enumerate(group)
+            if index > 0
+        }
+        adjacency_lookup: dict[str, set[str]] = {}
+        for group in params.get("adjacency_groups", ()):
+            if not isinstance(group, (list, tuple)):
+                continue
+            members = {str(object_id) for object_id in group}
+            for object_id in members:
+                adjacency_lookup.setdefault(object_id, set()).update(members - {object_id})
         accepted_ids: list[str] = []
         bottom_ids: list[str] = []
 
         while remaining:
             selected: tuple[SceneObject, ContainerPlacementCandidate] | None = None
             for obj in remaining:
+                if obj.object_id in forced_upper_ids:
+                    continue
                 candidates = container_candidates(
                     scene,
                     obj,
@@ -412,7 +484,11 @@ class PhysicalSolver:
                     placement = min(
                         candidates,
                         key=lambda candidate: self._organized_floor_score(
-                            scene, obj, container, candidate
+                            scene,
+                            obj,
+                            container,
+                            candidate,
+                            adjacency_lookup.get(obj.object_id, set()),
                         ),
                     )
                     selected = (obj, placement)
@@ -442,11 +518,18 @@ class PhysicalSolver:
                     if candidate.layer_index > 0
                     and self._reasonable_container_support(scene, obj, candidate)
                 ]
+                required_support = preferred_support.get(obj.object_id)
+                if required_support is not None:
+                    candidates = [
+                        candidate
+                        for candidate in candidates
+                        if required_support in candidate.support_ids
+                    ]
                 if candidates:
                     placement = min(
                         candidates,
                         key=lambda candidate: self._organized_upper_score(
-                            scene, obj, candidate
+                            scene, obj, candidate, required_support
                         ),
                     )
                     selected = (obj, placement)
@@ -473,6 +556,8 @@ class PhysicalSolver:
                 "upper_layer_ids": [
                     object_id for object_id in accepted_ids if object_id not in bottom_ids
                 ],
+                "llm_planned": isinstance(placement_order, (list, tuple)),
+                "planned_stack_groups": [list(group) for group in stack_groups],
             }
         )
         return accepted_ids
@@ -516,7 +601,8 @@ class PhysicalSolver:
         obj: SceneObject,
         container: SceneObject,
         candidate: ContainerPlacementCandidate,
-    ) -> tuple[float, float, float, float, float]:
+        adjacency_ids: set[str] | None = None,
+    ) -> tuple[float, float, float, float, float, float]:
         placed = replace(obj, position_m=candidate.position_m, yaw_rad=candidate.yaw_rad)
         supports = scene.metadata.get("container_supports", {})
         floor_objects = [
@@ -548,8 +634,22 @@ class PhysicalSolver:
             default=float("inf"),
         )
         contact_gap = min(wall_gap, neighbor_gap)
+        adjacent = [
+            scene.get(object_id)
+            for object_id in (adjacency_ids or set())
+            if object_id in scene.objects
+        ]
+        adjacency_gap = min(
+            (
+                (candidate.position_m[0] - existing.position_m[0]) ** 2
+                + (candidate.position_m[1] - existing.position_m[1]) ** 2
+                for existing in adjacent
+            ),
+            default=0.0,
+        )
         return (
             round(1.0 - compactness, 8),
+            round(adjacency_gap, 8),
             round(contact_gap, 8),
             -round(candidate.local_xy_m[1], 8),
             round(abs(candidate.local_xy_m[0]), 8),
@@ -616,7 +716,8 @@ class PhysicalSolver:
         scene: SceneState,
         obj: SceneObject,
         candidate: ContainerPlacementCandidate,
-    ) -> tuple[float, float, float, float]:
+        required_support: str | None = None,
+    ) -> tuple[float, float, float, float, float]:
         supporters = [
             scene.get(object_id)
             for object_id in candidate.support_ids
@@ -635,6 +736,7 @@ class PhysicalSolver:
         else:
             alignment = float("inf")
         return (
+            -float(required_support is not None and required_support in candidate.support_ids),
             -float(same_kind),
             round(candidate.position_m[2], 8),
             -round(candidate.support_ratio, 8),

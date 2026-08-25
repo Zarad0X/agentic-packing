@@ -18,6 +18,19 @@ classDiagram
     class InventoryParser {
       +parse(payload: dict) InventorySpec
     }
+    class InventoryPlanningAgent {
+      <<Protocol>>
+      +propose_inventory(prompt, inventory, previous_plan, feedback) dict
+    }
+    class CodexInventoryAgent {
+      +propose_inventory(...) dict
+    }
+    class OpenAIInventoryAgent {
+      +propose_inventory(...) dict
+    }
+    class InventoryPlanParser {
+      +parse(payload, inventory, assets) InventoryArrangementPlan
+    }
     class AssetCatalog {
       +resolve(description: str) AssetRecord
     }
@@ -47,6 +60,7 @@ classDiagram
       +generate(prompt: str) GenerationResult
       +run_program(program: PlacementProgram) GenerationResult
       +run_inventory(payload: dict) GenerationResult
+      +generate_inventory(prompt, payload, agent) GenerationResult
     }
     class SceneRenderer {
       +render(scene: SceneState, output_dir: Path) RenderArtifacts
@@ -54,6 +68,10 @@ classDiagram
 
     ScenePipeline --> PredicateParser
     ScenePipeline --> InventoryParser
+    ScenePipeline --> InventoryPlanningAgent
+    CodexInventoryAgent ..|> InventoryPlanningAgent
+    OpenAIInventoryAgent ..|> InventoryPlanningAgent
+    ScenePipeline --> InventoryPlanParser
     ScenePipeline --> AssetCatalog
     ManifestAssetCatalog --|> AssetCatalog
     ScenePipeline --> SpatialSolver
@@ -120,15 +138,25 @@ The evaluator records pre-alignment gap, applied correction, final contact gap,
 violations above 5 mm, and unresolved support cycles; organized acceptance
 requires zero final-gap violations and zero unresolved supports.
 
-The fixed-inventory path bypasses agent proposal and predicate-based object
-creation. `InventoryParser` validates one explicit container plus a unique list
-of object instances. Each instance resolves either through its category, an
-exact allowlisted manifest UID, or a user-provided inline asset record. The
-pipeline then calls the same global organized planner and the same single final
-physics simulation used by predicate scenes. Input IDs, resolved asset IDs,
-requested UIDs, placement order, and support provenance are serialized. An
-incomplete solution is a hard failure with explicit unplaced IDs, so identity
-and cardinality cannot change silently.
+The fixed-inventory path keeps object creation outside the agent but now puts
+semantic arrangement inside a full agent loop. `InventoryParser` validates one
+explicit container plus a unique list of object instances. Each instance
+resolves either through its category, an exact allowlisted manifest UID, or a
+user-provided inline asset record. The agent sees frozen IDs and physical facts,
+then emits a complete placement-order permutation, optional stack groups, and
+adjacency groups. `InventoryPlanParser` rejects identity changes and unsafe
+stacks. The global organized planner consumes the validated hints and the same
+single final physics simulation remains authoritative. Input IDs, resolved
+asset IDs, requested UIDs, every agent round, placement order, and support
+provenance are serialized. An incomplete solution becomes structured feedback
+with explicit unplaced IDs, so identity and cardinality cannot change silently.
+
+The default provider is `CodexInventoryAgent`, which invokes the authenticated
+local Codex CLI non-interactively with a final-response JSON Schema and a
+read-only inner sandbox. `OpenAIInventoryAgent` provides the paper-model
+`o4-mini` comparison through the Responses API. Both implement the same
+provider-neutral protocol; the physical solver never trusts either provider to
+override geometry, stackability, load, or semantic-support checks.
 
 ## Program call flow
 
@@ -173,6 +201,43 @@ sequenceDiagram
             V-->>P: artifacts
             P-->>U: GenerationResult
           end
+        end
+      end
+    end
+```
+
+## Fixed-inventory agent flow
+
+```mermaid
+sequenceDiagram
+    participant U as User/CLI
+    participant P as ScenePipeline
+    participant I as InventoryParser/Catalog
+    participant A as Codex or OpenAI agent
+    participant V as InventoryPlanParser
+    participant H as Organized PhysicalSolver
+    participant B as PhysicsBackend
+    participant F as FeedbackEngine
+
+    U->>P: arrange(prompt, fixed inventory)
+    P->>I: validate IDs and resolve physical facts
+    loop up to generation_round_limit
+      P->>A: prompt + exact inventory + prior plan + feedback
+      A-->>P: order + stack groups + adjacency groups
+      P->>V: identity and stackability validation
+      alt plan invalid
+        V-->>P: missing/invented/unsafe-plan issue
+        P->>A: grammar feedback on next round
+      else plan valid
+        P->>H: realize validated plan
+        H->>B: final assembled-scene simulation
+        B-->>H: contacts, displacement, penetration
+        alt solver failure
+          H-->>P: unplaced IDs and physical feedback
+          P->>A: solver feedback on next round
+        else success
+          H-->>P: complete scene and organization metrics
+          P-->>U: scene + render + llm_trace.json
         end
       end
     end
