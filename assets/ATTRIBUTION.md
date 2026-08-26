@@ -6,6 +6,13 @@ the earlier v1 manifest remains available for provenance and comparison. Each re
 source model URL, author, CC license, download URL, geometry metadata, source
 orientation, and SHA-256 for every accepted file.
 
+`assets/manifests/blenderkit_dense_v1.json` is a separate ledger for 19
+user-authorized BlenderKit candidates. It records the exact asset ID, author,
+source URL, BlenderKit license label, hash, and QA status. Royalty-free BlenderKit
+binaries remain in the authorized user's private cache and must not be copied into
+this repository or redistributed as a standalone model pack. CC0 entries retain
+their explicit source and hash here even though attribution is not required.
+
 All models in this manifest are distributed under Creative Commons Attribution
 4.0. Any render, scene bundle, or redistributed mesh that uses them must retain
 the corresponding author and source URL from the manifest. The procedural

@@ -37,7 +37,9 @@ experiments.
 - **Closed-loop correction:** invalid schemas, unsafe stack requests, and
   unplaced object IDs become structured feedback for the next planning round.
 - **Licensed real meshes:** a frozen 24-model Objaverse CC BY 4.0 asset pack with
-  hashes, attribution, opacity checks, embedded-texture checks, and dense-scene QA.
+  hashes, attribution, opacity checks, embedded-texture checks, and dense-scene QA;
+  plus a credential-free manifest for 19 user-authorized BlenderKit candidates
+  that have passed thumbnail, GLB, opacity, and neutral Blender-render review.
 - **Physical validation:** one final 400-step Genesis simulation of the assembled
   scene, plus a fast deterministic backend for development and regression tests.
 - **Auditable outputs:** the resolved inventory, agent rounds, support graph,
@@ -397,6 +399,13 @@ collision proxy, and pass dense Genesis scene QA. Scene scans, transparent asset
 extreme component counts, and models with poor proxy fill are rejected even when
 their thumbnails look attractive.
 
+`blenderkit_dense_v1.json` records a separate 19-model candidate pack spanning
+dishware, containers, grocery objects, tools, and office items. The raw files stay
+in a private authenticated cache and are never committed or redistributed. These
+assets have passed Blender 5.2 import/render QA, but remain marked
+`dense_scene_fit_status: pending` until proxy fitting and a real dense Genesis
+scene are accepted; they do not silently replace the frozen Objaverse benchmark.
+
 See [the asset guide](docs/asset_library.md) and
 [the attribution ledger](assets/ATTRIBUTION.md) for exact provenance and license
 terms.
@@ -416,7 +425,7 @@ agentic-packing/
 ├── examples/               # predicate programs and fixed inventories
 ├── src/physcensis/         # Python package; retained for import compatibility
 ├── tests/                  # parser, solver, agent, asset, and gate tests
-├── tools/                  # Objaverse curation and audit utilities
+├── tools/                  # Objaverse and BlenderKit curation/audit utilities
 └── output/                 # generated scenes and reports; mostly Git-ignored
 ```
 
@@ -435,7 +444,7 @@ Not currently claimed:
 
 - equivalence to the original authors' private approximately 800-asset library;
 - reproduction of their robot demonstration pipeline;
-- photorealistic material parity with private BlenderKit assets;
+- dense-scene/Genesis acceptance of the BlenderKit candidate pack (still pending);
 - collision fidelity of arbitrary concave user meshes;
 - universal optimality for packing or human household preferences;
 - paper metric equivalence without identical assets, simulator versions, models,

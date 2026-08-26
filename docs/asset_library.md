@@ -65,12 +65,24 @@ sliding between interlocked dishes.
 
 ## BlenderKit boundary
 
-BlenderKit's official client supports authenticated asset search and download,
-but a reproducible export also needs a user-authorized account/API key and a
-Blender runtime that can resolve the downloaded asset into a portable GLB. No
-credential or BlenderKit binary asset is included here. A later BlenderKit
-adapter should emit the same manifest fields and must pass the same license,
-provenance, hash, and visual-only integration checks before use.
+`assets/manifests/blenderkit_dense_v1.json` records 19 user-authorized candidates
+selected from 1,605 category-query results and 80 strict metadata shortlist
+entries. The curation tools require validated, free, rigid, realistic
+models with a downloadable GLB, plausible scale, a public thumbnail, and bounded
+object/face/file counts. Manual thumbnail review then rejects sets, attached
+stands, decorative mismatches, and objects unsuitable for dense packing.
+
+Downloaded GLBs remain in the user's private BlenderKit cache. The repository
+stores only asset IDs, authors, source URLs, licenses, hashes, geometry statistics,
+and QA states; it never stores credentials or royalty-free binary assets. The v1
+run parsed 28 GLBs, quarantined four with transparent materials, rendered all 24
+remaining files in Blender 5.2 LTS, and retained 19 after final visual review.
+
+The manifest deliberately marks every entry `dense_scene_fit_status: pending`.
+An asset becomes demo-ready only after aspect-preserving proxy fitting, material
+inspection in the target renderer, and a real dense Genesis scene pass. The
+existing frozen Objaverse v3 pack remains authoritative until that final gate is
+complete.
 
 ## Quality and dense-scene boundary
 

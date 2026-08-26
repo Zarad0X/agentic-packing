@@ -1,0 +1,561 @@
+{
+  "schema_version": 1,
+  "source": "BlenderKit",
+  "distribution_policy": "Raw royalty-free BlenderKit files stay in the user-authorized private cache. This manifest contains provenance and hashes only.",
+  "renderer": "5.2.0 LTS",
+  "asset_count": 19,
+  "assets": [
+    {
+      "category": "screwdriver",
+      "asset_base_id": "088caf04-8c48-41fd-9289-6a12f60d57af",
+      "stackable": false,
+      "name": "Screwdriver",
+      "author": "Poly Haven ",
+      "license": "cc_zero",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/66ad16ab-6c70-4be2-b066-17922f84775d/",
+      "sha256": "e23655af66ec16c7adabbd0cf3103b24ffd6854b30b68a0eed441440bc6946b6",
+      "size_bytes": 23932,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 3412,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.027132242918014526,
+          0.043105410979066144,
+          0.2104994830539818
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "sink",
+      "asset_base_id": "2629f55a-a030-4579-b1b0-8613d598109b",
+      "stackable": false,
+      "name": "Stainless steel kitchen sink",
+      "author": "Russo 3D",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/9a35a59c-2b1e-4572-89b5-030fa4e7ac17/",
+      "sha256": "683e734fb2cce824de78e429776e054aeb54b09adbe8e789ef3f67d07f4f95cb",
+      "size_bytes": 288960,
+      "geometry": {
+        "mesh_count": 6,
+        "node_count": 7,
+        "primitive_count": 7,
+        "triangle_count": 62512,
+        "material_count": 7,
+        "image_count": 11,
+        "dimensions": [
+          0.8124703466892242,
+          0.3910417854785919,
+          0.5345212519168854
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "plate",
+      "asset_base_id": "4085422f-4c06-4ee3-b09f-743ce3bb2614",
+      "stackable": true,
+      "name": "Fine Dining Ceramic Plate",
+      "author": "PolyFoundry ",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/7a4be7f5-f04b-4824-9c47-171d08e7b688/",
+      "sha256": "62630d4636910b4221c40570437c4fd7b0471153de913761fb87a45a3da85479",
+      "size_bytes": 14624,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 3964,
+        "material_count": 1,
+        "image_count": 1,
+        "dimensions": [
+          0.25223803520202637,
+          0.019693662063218653,
+          0.25223803520202637
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "crate",
+      "asset_base_id": "46258139-9f60-495b-9682-e08ea4e65712",
+      "stackable": false,
+      "name": "Plastic Crate 01",
+      "author": "Poly Haven ",
+      "license": "cc_zero",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/099bf9f0-5ba4-4a83-a698-cde87cff5ef4/",
+      "sha256": "e9176e518caa26c079e20597e0db0ed418fb7396ce6b64d05bd48d983cd4189f",
+      "size_bytes": 183328,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 18320,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.29800063371658325,
+          0.2641694247722626,
+          0.40800413489341736
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "mug",
+      "asset_base_id": "61f9aaae-34ca-4bf0-ac41-913d714b8c2a",
+      "stackable": false,
+      "name": "Mug",
+      "author": "Kin Chen",
+      "license": "cc_zero",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/b92249cc-28cd-42b4-9ff3-803729d55b37/",
+      "sha256": "8e5349ea3a32a9a4e741d06f5267eab4d8c9f72534ca21b1913779d015c6619a",
+      "size_bytes": 37692,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 2,
+        "triangle_count": 3680,
+        "material_count": 2,
+        "image_count": 2,
+        "dimensions": [
+          0.13219262287020683,
+          0.10008362436201423,
+          0.09540519490838051
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "phone",
+      "asset_base_id": "63808777-3a75-430f-88a2-b767b64bc5e0",
+      "stackable": false,
+      "name": "Nokia 3310",
+      "author": "Dope Render",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/2dd3fb92-be20-45db-aa1f-a51926cf2114/",
+      "sha256": "4c8a04e35766f994f6a3c60b4f68858d9c421318feff213479bcf66d9ae4f39d",
+      "size_bytes": 1673060,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 30762,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.048190442845225334,
+          0.11472275108098984,
+          0.022378607653081417
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "can",
+      "asset_base_id": "85f57557-dd77-44ed-a4c2-c98547d08fc3",
+      "stackable": false,
+      "name": "Tin can with fish",
+      "author": "stray designer",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/39df3a9b-ff8c-4776-90bd-e20cab66807c/",
+      "sha256": "b9bb3d71d1ab0d4c06177d375d6d3ece8bf87282dff32c1f537e7716c9cecc82",
+      "size_bytes": 40300,
+      "geometry": {
+        "mesh_count": 2,
+        "node_count": 3,
+        "primitive_count": 2,
+        "triangle_count": 6172,
+        "material_count": 2,
+        "image_count": 1,
+        "dimensions": [
+          0.07073746621608734,
+          0.0299826730042696,
+          0.07073746621608734
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "pliers",
+      "asset_base_id": "865092c3-1430-449c-988a-21f228c5919d",
+      "stackable": false,
+      "name": "Combination Pliers",
+      "author": "Ken Xie",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/2a961a16-6a8a-4f05-a996-e1979f0a2e81/",
+      "sha256": "a715e8419bf70ab2b32dd61656e7c957151e751421f644ae62b06922df756c8e",
+      "size_bytes": 428216,
+      "geometry": {
+        "mesh_count": 4,
+        "node_count": 5,
+        "primitive_count": 4,
+        "triangle_count": 21554,
+        "material_count": 4,
+        "image_count": 8,
+        "dimensions": [
+          0.11547950655221939,
+          0.050442088046111166,
+          0.33950305730104446
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "bottle",
+      "asset_base_id": "9177bc55-2a7f-4dc0-92dd-6abc75200090",
+      "stackable": false,
+      "name": "Cold Drink",
+      "author": "Adeel afzal",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/4df26014-4af9-47f9-a092-c8120a17b449/",
+      "sha256": "5f1cd07e6f9e00ba5cb059392b3f8803ba0418d6354710ef483b9b8cc0219d40",
+      "size_bytes": 342192,
+      "geometry": {
+        "mesh_count": 4,
+        "node_count": 5,
+        "primitive_count": 4,
+        "triangle_count": 24372,
+        "material_count": 4,
+        "image_count": 4,
+        "dimensions": [
+          0.038143713027238846,
+          0.1493421532213688,
+          0.038143713027238846
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "drill",
+      "asset_base_id": "9aa7291e-3ff7-4d77-a243-2ae5e8709d24",
+      "stackable": false,
+      "name": "POWER DRILLER",
+      "author": "Dope Render",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/41bc4d61-f39f-49a1-b3bb-da94cbdc45a5/",
+      "sha256": "0cba23664b9279f9f780d65e01f1308b57f37692b29f748729727c5320511b62",
+      "size_bytes": 1749096,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 1,
+        "primitive_count": 1,
+        "triangle_count": 118230,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.060693131759762764,
+          0.20171096920967102,
+          0.14541245996952057
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "plate",
+      "asset_base_id": "b9315514-f0a8-4f7a-97b1-4c743172e352",
+      "stackable": true,
+      "name": "Fine Dining Ceramic Plate Large Rimmed",
+      "author": "PolyFoundry ",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/83c6d6fe-41f4-4c5d-b2bc-3bb8a9efbe7a/",
+      "sha256": "60cde5119d13cea95e481e61532cf28d5f73007cbb4f3025643f59b0caab2a1c",
+      "size_bytes": 16716,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 2048,
+        "material_count": 1,
+        "image_count": 1,
+        "dimensions": [
+          0.33019999500008124,
+          0.026899132689395484,
+          0.3301999800989203
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "mouse",
+      "asset_base_id": "bdd42bb4-37d1-4677-9b5d-92dc17e1bd84",
+      "stackable": false,
+      "name": "Mouse Bluetooth",
+      "author": "Elin FL",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/7301316b-3678-4849-a7b4-c7a7d7495148/",
+      "sha256": "dd1a94fa85199f2a93f7d0c7f760d1ca24e4aaa1ffb210f5e9532f8e7244d3ad",
+      "size_bytes": 13848,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 1,
+        "primitive_count": 3,
+        "triangle_count": 1712,
+        "material_count": 3,
+        "image_count": 1,
+        "dimensions": [
+          0.18631578236818314,
+          0.07739202678203583,
+          0.26835930347442627
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "wrench",
+      "asset_base_id": "c5ecea1d-1314-4df3-8433-91924f457f79",
+      "stackable": false,
+      "name": "Combination Wrench",
+      "author": "Poly Haven ",
+      "license": "cc_zero",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/46195726-5bb5-4b59-879f-d80d1d139f67/",
+      "sha256": "092ead9bfb6ef85ecaace54ac9d9d21710e368e2e51e7d37129e09380be512eb",
+      "size_bytes": 21560,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 1986,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.05658109299838543,
+          0.021513011306524277,
+          0.33698412775993347
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "mug",
+      "asset_base_id": "c61cc57b-f80b-4ff4-8c1d-ac72237ec1fa",
+      "stackable": false,
+      "name": "Ceramic flower mug",
+      "author": "GL3D Gabriela Linhares",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/124515ca-0843-4213-8ca2-26104ad0f5c3/",
+      "sha256": "ecbe1567070ecf785c82f424b57dfc5a5969dccaa640cb9b5aecb7dc7ac3c146",
+      "size_bytes": 2297832,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 100000,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.1056276336312294,
+          0.1195799994257104,
+          0.15151839330792427
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "bowl",
+      "asset_base_id": "d2c8cc7f-79a4-44b4-8b10-28255f5b9fe6",
+      "stackable": true,
+      "name": "Decorative Bowl",
+      "author": "Santiago Adrio",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/9e4c0a09-ea8a-4895-a3b2-c4b67993980d/",
+      "sha256": "bf09f7c2225d2bae195cc2e3af892148afac25e13e2fb369779ec04af9503199",
+      "size_bytes": 37080,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 1344,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.3719383919550836,
+          0.11293504301519917,
+          0.37193849524909206
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "jar",
+      "asset_base_id": "d51c1ed1-422c-45d8-9621-56bcd2171d0b",
+      "stackable": false,
+      "name": "Glass jar storage",
+      "author": "Jon 13",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/1e12c345-b299-4d1e-9c69-b995ad625944/",
+      "sha256": "64ef242c954c1e49804990b19f417c8ebea0b23ef013d99a8c164891b49d6068",
+      "size_bytes": 55920,
+      "geometry": {
+        "mesh_count": 3,
+        "node_count": 4,
+        "primitive_count": 4,
+        "triangle_count": 19836,
+        "material_count": 3,
+        "image_count": 2,
+        "dimensions": [
+          0.10999999940395355,
+          0.2781010568141937,
+          0.11370520293712616
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "keyboard",
+      "asset_base_id": "dbf79f4d-1b9c-4ad6-aec9-13cb2b9e648c",
+      "stackable": false,
+      "name": "Mechanical Keyboard",
+      "author": "zack aoki",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/ede716ef-9177-4a9e-b6a3-2eab4b05b66f/",
+      "sha256": "9b9495385a3c4f88ad18d5921cbeb718b255a6b63a17852ecee8c244e4512ff6",
+      "size_bytes": 196808,
+      "geometry": {
+        "mesh_count": 2,
+        "node_count": 2,
+        "primitive_count": 3,
+        "triangle_count": 40400,
+        "material_count": 3,
+        "image_count": 3,
+        "dimensions": [
+          0.3656563460826874,
+          0.02828270848840475,
+          0.15000000596046448
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "crate",
+      "asset_base_id": "e58013cc-d93f-44fe-b775-636dc90500c1",
+      "stackable": false,
+      "name": "Plastic Crate 02",
+      "author": "Poly Haven ",
+      "license": "cc_zero",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/faf99768-6780-4016-be22-eef6fc1c4919/",
+      "sha256": "dac4027e1e9a0e6e5039e81e8d7ce74f8f45e5230b65ea2c1a8cba3b833d5f50",
+      "size_bytes": 36288,
+      "geometry": {
+        "mesh_count": 1,
+        "node_count": 2,
+        "primitive_count": 1,
+        "triangle_count": 5840,
+        "material_count": 1,
+        "image_count": 3,
+        "dimensions": [
+          0.505501389503479,
+          0.2540891617536545,
+          0.4055013954639435
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    },
+    {
+      "category": "bottle",
+      "asset_base_id": "eda42454-e487-41b4-aa93-9b673c0436f8",
+      "stackable": false,
+      "name": "Plastic water bottle",
+      "author": "Nana Nurzhau",
+      "license": "royalty_free",
+      "source_url": "https://www.blenderkit.com/api/v1/assets/8d143f48-0f76-4d6b-88e5-0185df64b98b/",
+      "sha256": "7a4f8263cbfc4aaa5e30eb321eaa9f017065ee613480c008e1df505b0e3fc2cf",
+      "size_bytes": 199896,
+      "geometry": {
+        "mesh_count": 8,
+        "node_count": 9,
+        "primitive_count": 8,
+        "triangle_count": 18170,
+        "material_count": 8,
+        "image_count": 9,
+        "dimensions": [
+          0.07241716608405113,
+          0.22720676474273205,
+          0.06421996653079987
+        ]
+      },
+      "verification_status": "validated",
+      "is_free": true,
+      "geometry_qa_status": "pass",
+      "visual_qa_status": "blender_studio_pass",
+      "dense_scene_fit_status": "pending"
+    }
+  ]
+}
+
